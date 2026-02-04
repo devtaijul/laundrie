@@ -1,0 +1,32 @@
+export const PAGES = {
+  HOME: "/",
+  FAQ: "/faq",
+  LAUNDRIE: "/laundrie",
+  ORDER: "/order",
+  ORDERS: "/orders",
+  ORDER_SUCCESS: (orderId: string) => `/order-success/${orderId}`,
+  FORGOT_PASSWORD: "/forgot-password",
+  ACCOUNT: {
+    ROOT: "/account",
+    PROFILE: "/account/profile",
+    ADDRESS: "/account/address",
+    DETAILS: "/account/details",
+  },
+  GIFT_CARDS: "/gift-cards",
+  REFERRALS: "/referrals",
+  SCAN: (id: string) => `/referrals/scan/${id}`,
+  PRICING: "/pricing",
+  LOGIN: "/login",
+  SIGNUP_REFERRAL: (ref: string) => `/signup/${ref}`,
+  SIGNUP: "/signup",
+  ABOUT: "/about",
+  CONTACT: "/contact",
+  ADMIN: {
+    ROOT: "/admin",
+    ORDERS: "/admin/orders",
+    ORDER_VIEW: (orderId: string) => `/admin/orders/${orderId}`,
+  },
+  DRIVER: {
+    ROOT: "/driver",
+  },
+};

@@ -1,0 +1,351 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ThemePreference {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
+enum Role {
+  USER
+  ADMIN
+  DRIVER
+}
+
+enum TypeOfUse {
+  PERSONAL
+  BUSINESS
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  PICKUP_SCHEDULED
+  PICKED_UP
+  DELIVERY_SCHEDULED
+  DELIVERED
+  FAILED
+  CANCELED
+}
+
+enum StripePaymentIntentStatus {
+  requires_payment_method
+  requires_confirmation
+  requires_action
+  processing
+  requires_capture
+  canceled
+  succeeded
+}
+
+enum OrderEventType {
+  PICKUP_SCHEDULED
+  PICKED_UP
+  CLEANING_STARTED
+  CLEANING_DONE
+  DELIVERY_SCHEDULED
+  DELIVERED
+  STATUS_CHANGED
+}
+
+model User {
+  id String @id @default(cuid())
+
+  // Profile
+  name             String
+  phone            String?   @unique @db.VarChar(32)
+  email            String?   @unique @db.VarChar(191)
+  marketing        Boolean   @default(false)
+  notifications    Boolean   @default(true)
+  role             Role      @default(USER)
+  useType          TypeOfUse @default(PERSONAL)
+  isOver65         Boolean   @default(false)
+  phoneVerifiedAt  DateTime?
+  stripeCustomerId String?
+
+  image String?
+  theme ThemePreference @default(SYSTEM)
+
+  // Auth (password login চাইলে)
+  passwordHash String?
+
+  // Reseting token
+  resetTokenHash    String?
+  resetTokenExpires DateTime?
+
+  //Referral
+  tenDollarCode    String @unique
+  twentyDollarCode String @unique
+
+  // if driver then driver information
+  vehicleType   String?
+  vehicleNumber String?
+  location      String?
+
+  // Email Verified (for password login)
+  emailVerified                 DateTime?
+  emailVarificationToken        String?
+  emailVarificationTokenExpires DateTime?
+
+  // Lifecycle
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // NextAuth relations
+  accounts Account[]
+  sessions Session[]
+  // Orders as customer
+  orders   Order[]   @relation("UserOrders")
+
+  // Orders as rider
+  riderOrders Order[] @relation("RiderOrders")
+
+  @@index([phone])
+}
+
+model Order {
+  id                 String         @id @default(cuid())
+  // Customer
+  userId             String
+  user               User           @relation("UserOrders", fields: [userId], references: [id])
+  totalCents         Int
+  orderId            String         @unique @default(cuid())
+  currency           String         @default("eur")
+  status             OrderStatus    @default(PENDING) // pending|processing|paid|failed|canceled|refunded
+  pickupAddress      String?
+  pickupSpot         pickupSpotType @default(FRONT_DOOR)
+  pickupInstructions String?
+  deliverySpeed      String?
+  detergent          String?
+  delicateCycle      Boolean        @default(false)
+  returnOnHangers    Boolean        @default(false)
+  additionalRequests String?
+  smallBags          Int            @default(0)
+  regularBags        Int            @default(0)
+  largeBags          Int            @default(0)
+  oversizedItems     Int            @default(0)
+  coverageType       String?
+  promoCode          String?
+  giftCard           String?
+  machinesCost       Float          @default(0)
+  oversizedCost      Float          @default(0)
+  deliveryFee        Float          @default(0)
+  subtotal           Float          @default(0)
+  tax                Float          @default(0)
+  coverageCost       Float          @default(0)
+  paymentIntent      String? // pi_xxx
+  payments           Payment[] // history
+  events             OrderEvent[] // 👈 timeline history
+  // Rider
+  riderId            String?
+  rider              User?          @relation("RiderOrders", fields: [riderId], references: [id])
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}
+
+// === NextAuth required models ===
+
+model Account {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type              String
+  provider          String
+  providerAccountId String
+
+  refresh_token            String?
+  refresh_token_expires_in Int?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+  oauth_token_secret       String?
+  oauth_token              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// Magic link / OTP (NextAuth ব্যবহার করলে এইটাই লাগবে)
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Order 
+
+enum pickupSpotType {
+  FRONT_DOOR
+  BACK_DOOR
+  FRONT_DESK
+  CUSTOM
+}
+
+model OrderEvent {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  type        OrderEventType // e.g. PICKUP_SCHEDULED, IN_PROGRESS, DELIVERED
+  title       String // "Pickup Scheduled", "In Progress", "Delivery"
+  description String? // "Being cleaned", "Driver assigned", etc.
+  // Optional: store any structured extra data (oldStatus/newStatus, actor, etc.)
+  meta        Json?
+
+  occurredAt DateTime @default(now()) // when this step happened
+  createdAt  DateTime @default(now())
+}
+
+model Payment {
+  id              String                    @id @default(cuid())
+  orderId         String
+  order           Order                     @relation(fields: [orderId], references: [id])
+  paymentIntentId String
+  status          StripePaymentIntentStatus @default(processing)
+  amountCents     Int
+  currency        String
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+}
+
+model Business {
+  id               String   @id @default(cuid())
+  business_name    String
+  business_email   String
+  phone            String
+  whatsapp_number  String
+  business_address String
+  city             String?
+  state            String?
+  zip_code         String?
+  logo_url         String
+  favicon_url      String
+  description      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  website          Website?
+}
+
+model PaymentSetting {
+  id                     String   @id @default(cuid())
+  cash_on_delivery       Boolean  @default(false)
+  credit_devit           Boolean  @default(false)
+  digital_wallet         Boolean  @default(false)
+  bank_transfer          Boolean  @default(false)
+  stripe_publishable_key String?
+  stripe_secret_key      String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  website                Website?
+}
+
+model Security {
+  id                  String   @id @default(cuid())
+  two_factor_auth     Boolean  @default(false)
+  session_timeout     Int      @default(1800)
+  max_login_attempts  Int      @default(5)
+  enable_ip_whitelist Boolean  @default(false)
+  ip_whitelist        String[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  website             Website?
+}
+
+model AdminNotification {
+  id               String   @id @default(cuid())
+  new_orders       Boolean  @default(false)
+  customer_reviews Boolean  @default(false)
+  support_tickets  Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  website          Website?
+}
+
+model EmailConfiguration {
+  id        String   @id @default(cuid())
+  host      String
+  port      Int
+  username  String
+  password  String
+  from      String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  website   Website?
+}
+
+model SMSConfiguration {
+  id          String   @id @default(cuid())
+  provider    String
+  api_key     String
+  auth_token  String
+  from_number String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  website     Website?
+}
+
+model CustomerNotification {
+  id                       String   @id @default(cuid())
+  order_confirmation_email Boolean  @default(false)
+  driver_id_orders         Boolean  @default(false)
+  order_completed_email    Boolean  @default(false)
+  promotional_message      Boolean  @default(false)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  website                  Website?
+}
+
+model Website {
+  id                       String               @id @default(cuid())
+  businessId               String               @unique
+  business                 Business             @relation(fields: [businessId], references: [id])
+  payment_settings_id      String               @unique
+  payment_settings         PaymentSetting       @relation(fields: [payment_settings_id], references: [id])
+  security_id              String               @unique
+  security                 Security             @relation(fields: [security_id], references: [id])
+  notification_id          String               @unique
+  notification             AdminNotification    @relation(fields: [notification_id], references: [id])
+  email_config_id          String               @unique
+  email_config             EmailConfiguration   @relation(fields: [email_config_id], references: [id])
+  sms_config_id            String               @unique
+  sms_config               SMSConfiguration     @relation(fields: [sms_config_id], references: [id])
+  customer_notification_id String               @unique
+  customer_notification    CustomerNotification @relation(fields: [customer_notification_id], references: [id])
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+}
