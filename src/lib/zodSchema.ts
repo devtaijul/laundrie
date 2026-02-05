@@ -14,13 +14,11 @@ export const signupSchema = z.object({
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(
       /[!@#$%^&*(),.?":{}|<>]/,
-      "Password must contain at least one special character"
+      "Password must contain at least one special character",
     ),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  phone: z
-    .string()
-    .regex(/^\+?\d{8,15}$/, "Enter a valid phone number with country code"),
+  phone: z.string().min(8, "Phone must be at least 8 digits"),
   useType: z.enum(["PERSONAL", "BUSINESS"]),
   isOver65: z.enum(["yes", "no"], {
     error: "Please select an option",
@@ -68,10 +66,7 @@ export const accountFormSchema = z.object({
     .string()
     .min(2, "Last name must be at least 2 characters")
     .max(50, "Too long"),
-  phone: z
-    .string()
-    .min(8, "Phone must be at least 8 digits")
-    .refine((v) => /\d/.test(v), { message: "Phone must contain digits" }),
+  phone: z.string().min(8, "Phone must be at least 8 digits"),
   email: z.string().email("Enter a valid email address"),
   theme: ThemeEnum,
 });
