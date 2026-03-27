@@ -35,7 +35,7 @@ const FOLDING_OPTIONS = [
 export const LaundryCareStep = () => {
   const { state, dispatch } = useOrder();
   const [showAdditional, setShowAdditional] = useState(
-    !!state.data.additionalRequests
+    !!state.data.additionalRequests,
   );
 
   const updateData = (field: LaundryCareField, value: LaundryCareValue) => {
@@ -68,7 +68,7 @@ export const LaundryCareStep = () => {
                 "w-full flex items-center justify-between px-4 py-3 rounded-md border text-left transition-colors",
                 state.data.detergent === opt.value
                   ? "border-primary bg-primary/5"
-                  : "border-gray-200 hover:border-gray-300"
+                  : "border-gray-200 hover:border-gray-300",
               )}
             >
               <span className="text-sm font-medium">{opt.label}</span>
@@ -78,7 +78,7 @@ export const LaundryCareStep = () => {
                     "text-xs font-medium px-2 py-0.5 rounded-full",
                     opt.badge === "Included"
                       ? "bg-green-100 text-green-700"
-                      : "bg-amber-100 text-amber-700"
+                      : "bg-amber-100 text-amber-700",
                   )}
                 >
                   {opt.badge}
@@ -104,7 +104,7 @@ export const LaundryCareStep = () => {
                 "py-2.5 rounded-md border text-sm font-medium transition-colors",
                 state.data.washingTemp === opt.value
                   ? "border-primary bg-primary text-white"
-                  : "border-gray-200 text-foreground hover:border-gray-300"
+                  : "border-gray-200 text-foreground hover:border-gray-300",
               )}
             >
               {opt.label}
@@ -121,7 +121,7 @@ export const LaundryCareStep = () => {
           "w-full flex items-center gap-3 px-4 py-3 rounded-md border text-left transition-colors",
           state.data.delicateCycle
             ? "border-primary bg-primary/5"
-            : "border-gray-200 hover:border-gray-300"
+            : "border-gray-200 hover:border-gray-300",
         )}
       >
         <Checkbox
@@ -151,7 +151,7 @@ export const LaundryCareStep = () => {
                 "w-full flex items-center justify-between px-4 py-3 rounded-md border text-left transition-colors",
                 state.data.foldingOption === opt.value
                   ? "border-primary bg-primary/5"
-                  : "border-gray-200 hover:border-gray-300"
+                  : "border-gray-200 hover:border-gray-300",
               )}
             >
               <span className="text-sm font-medium">{opt.label}</span>
@@ -161,7 +161,7 @@ export const LaundryCareStep = () => {
                     "text-xs font-medium px-2 py-0.5 rounded-full",
                     opt.badge === "Included"
                       ? "bg-green-100 text-green-700"
-                      : "bg-amber-100 text-amber-700"
+                      : "bg-amber-100 text-amber-700",
                   )}
                 >
                   {opt.badge}
@@ -178,9 +178,7 @@ export const LaundryCareStep = () => {
         <div className="flex items-center justify-between px-4 py-3 rounded-md border border-gray-200">
           <div>
             <p className="text-sm font-medium">Iron clothes</p>
-            <p className="text-xs text-muted-foreground">
-              +€3.00 per piece
-            </p>
+            <p className="text-xs text-muted-foreground">+€3.00 per piece</p>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -188,10 +186,7 @@ export const LaundryCareStep = () => {
               size="icon"
               type="button"
               onClick={() =>
-                updateData(
-                  "ironPieces",
-                  Math.max(0, state.data.ironPieces - 1)
-                )
+                updateData("ironPieces", Math.max(0, state.data.ironPieces - 1))
               }
               disabled={state.data.ironPieces === 0}
               className="h-8 w-8 rounded-full border-primary text-primary hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
@@ -233,7 +228,7 @@ export const LaundryCareStep = () => {
             "w-full flex items-center gap-3 px-4 py-3 rounded-md border text-left transition-colors",
             showAdditional
               ? "border-primary bg-primary/5"
-              : "border-gray-200 hover:border-gray-300"
+              : "border-gray-200 hover:border-gray-300",
           )}
         >
           <Checkbox

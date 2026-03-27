@@ -8,8 +8,9 @@ import { SafeUser } from "./types/global-type";
 import { $Enums } from "./generated/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   session: {
-    strategy: "jwt", // স্পষ্ট করে দিলাম
+    strategy: "jwt",
   },
   providers: [
     Credentials({
