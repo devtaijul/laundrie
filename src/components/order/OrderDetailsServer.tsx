@@ -158,42 +158,50 @@ export const OrderDetailsServer = async ({ orderId }: { orderId: string }) => {
               <div className="w-2 h-2 bg-foreground rounded-full" />
               <span className="text-sm">{order?.detergent}</span>
             </div>
-            {order?.returnOnHangers && (
+            {order?.washingTemp && (
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-foreground rounded-full" />
+                <span className="text-sm">{order.washingTemp}°C wash</span>
+              </div>
+            )}
+            {order?.foldingOption && (
               <div className="flex items-center gap-3">
                 <Shirt className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Hang-dry items</span>
+                <span className="text-sm capitalize">
+                  {order.foldingOption === "no-fold"
+                    ? "Do not fold"
+                    : order.foldingOption === "hangers"
+                      ? "Everything on hangers"
+                      : "Fold"}
+                </span>
+              </div>
+            )}
+            {order?.ironPieces != null && order.ironPieces > 0 && (
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-foreground rounded-full" />
+                <span className="text-sm">
+                  Ironing: {order.ironPieces} piece
+                  {order.ironPieces > 1 ? "s" : ""}
+                </span>
               </div>
             )}
           </div>
-          {order?.returnOnHangers && (
-            <div className="bg-primary/10 rounded-lg px-4 py-3 mt-3 flex items-center gap-2">
-              <span className="text-sm font-medium text-primary">
-                Include hangers
-              </span>
-              <span className="text-sm text-muted-foreground">
-                with your laundry!
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* Bag Count */}
+        {/* Machine Count */}
         <div>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
               <ShoppingBag className="h-5 w-5 text-white" />
             </div>
-            <h3 className="text-base font-semibold">Bag Count</h3>
+            <h3 className="text-base font-semibold">Machine Count</h3>
           </div>
           <div className="pl-2">
             <div className="flex items-center gap-3">
               <ShoppingBag className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">
-                {order?.largeBags
-                  ? `${order?.largeBags} large bags`
-                  : order?.smallBags
-                    ? `${order?.smallBags} small bags`
-                    : `${order?.regularBags} regular bags`}
+                {order?.machineCount ?? 1} washing machine
+                {(order?.machineCount ?? 1) > 1 ? "s" : ""}
               </span>
             </div>
           </div>

@@ -126,52 +126,80 @@ export const getOrderStatusBadge = (status: OrderStatus) => {
   }
 };
 
+export const PRICING = {
+  machine: {
+    standard: { base: 25, additional: 20 },
+    express: { base: 30, additional: 20 },
+  },
+  oversizedItem: 15, // per item: oversized, pillow, duvet
+  softener: 2.5,     // classic detergent + softener addon
+  hangers: 5,        // everything on hangers addon
+  iron: 3,           // per piece ironing
+  deliveryFee: 9,
+  taxRate: 0.21,
+  minimumCharge: 40,
+} as const;
+
 export const orderCalculation = (state: OrderData) => {
   const {
-    smallBags,
-    regularBags,
-    largeBags,
+    machineCount = 1,
     deliverySpeed,
     oversizedItems,
-    coverageType,
+    pillowItems = 0,
+    duvetItems = 0,
     coverageCost,
+    detergent,
+    foldingOption,
+    ironPieces = 0,
   } = state;
+
   const isExpress = deliverySpeed === "express";
+  const machinePricing = isExpress
+    ? PRICING.machine.express
+    : PRICING.machine.standard;
 
-  // Pricing constants
-  const basePrice = isExpress ? 30 : 25;
-  const additionalPrice = isExpress ? 18 : 16;
-  const deliveryFee = 9;
-  const oversizedItemPrice = 15;
-  const taxRate = 0.21; // 21%
-  const minimumCharge = 40;
-
-  // Calculate total machines
-  let totalMachines = 0;
-  if (smallBags > 0) totalMachines = smallBags;
-  if (regularBags > 0) totalMachines = regularBags;
-  if (largeBags > 0) totalMachines = largeBags * 1.5;
-
-  // Calculate costs
+  // Machine cost: first machine at base price, each additional at €20
   const machinesCost =
-    totalMachines > 0
-      ? basePrice + Math.max(0, Math.ceil(totalMachines) - 1) * additionalPrice
+    machineCount > 0
+      ? machinePricing.base +
+        Math.max(0, machineCount - 1) * machinePricing.additional
       : 0;
-  const oversizedCost = oversizedItems * oversizedItemPrice;
-  const subtotal = machinesCost + oversizedCost + deliveryFee;
-  const tax = subtotal * taxRate;
 
-  const total = Math.max(minimumCharge, subtotal + tax + coverageCost);
+  // Oversized items cost (oversized items + pillows + duvets)
+  const oversizedCost =
+    (oversizedItems + pillowItems + duvetItems) * PRICING.oversizedItem;
+
+  // Laundry care addons
+  const softenerCost =
+    detergent === "classic-softener" ? PRICING.softener : 0;
+  const hangersCost = foldingOption === "hangers" ? PRICING.hangers : 0;
+  const ironCost = ironPieces * PRICING.iron;
+
+  const subtotal =
+    machinesCost +
+    oversizedCost +
+    softenerCost +
+    hangersCost +
+    ironCost +
+    PRICING.deliveryFee;
+  const tax = subtotal * PRICING.taxRate;
+  const total = Math.max(
+    PRICING.minimumCharge,
+    subtotal + tax + (coverageCost ?? 0)
+  );
 
   return {
     machinesCost,
     oversizedCost,
-    deliveryFee,
+    softenerCost,
+    hangersCost,
+    ironCost,
+    deliveryFee: PRICING.deliveryFee,
     subtotal,
     tax,
-    coverageCost,
+    coverageCost: coverageCost ?? 0,
     total,
-    minimumCharge,
+    minimumCharge: PRICING.minimumCharge,
     isExpress,
   };
 };

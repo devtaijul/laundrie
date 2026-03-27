@@ -96,27 +96,46 @@ export const OrderDetailsMain = ({ order }: { order: OrderExtends | null }) => {
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-foreground mt-1.5 flex-shrink-0"></span>
-                    <span>Use {order?.detergent} detergent</span>
+                    <span>Detergent: {order?.detergent}</span>
                   </li>
+                  {order?.washingTemp && (
+                    <li className="flex items-start gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-foreground mt-1.5 flex-shrink-0"></span>
+                      <span>Temperature: {order.washingTemp}°C</span>
+                    </li>
+                  )}
                   <li className="flex items-start gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-foreground mt-1.5 flex-shrink-0"></span>
                     <span>
-                      {order?.delicateCycle ? "Delicate Cycle" : "Normal Cycle"}
+                      {order?.delicateCycle ? "Delicate cycle" : "Normal cycle"}
                     </span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-foreground mt-1.5 flex-shrink-0"></span>
-                    <span>
-                      {order?.returnOnHangers
-                        ? "Return on Hangers"
-                        : "Return in Bag"}
-                    </span>
-                  </li>
-
+                  {order?.foldingOption && (
+                    <li className="flex items-start gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-foreground mt-1.5 flex-shrink-0"></span>
+                      <span>
+                        Finishing:{" "}
+                        {order.foldingOption === "no-fold"
+                          ? "Do not fold"
+                          : order.foldingOption === "hangers"
+                            ? "Everything on hangers"
+                            : "Fold"}
+                      </span>
+                    </li>
+                  )}
+                  {order?.ironPieces != null && order.ironPieces > 0 && (
+                    <li className="flex items-start gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-foreground mt-1.5 flex-shrink-0"></span>
+                      <span>
+                        Ironing: {order.ironPieces} piece
+                        {order.ironPieces > 1 ? "s" : ""}
+                      </span>
+                    </li>
+                  )}
                   {order?.additionalRequests && (
                     <li className="flex items-start gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-foreground mt-1.5 flex-shrink-0"></span>
-                      <span>{order?.additionalRequests}</span>
+                      <span>{order.additionalRequests}</span>
                     </li>
                   )}
                 </ul>

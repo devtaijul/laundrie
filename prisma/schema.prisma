@@ -147,6 +147,18 @@ model Order {
   subtotal           Float          @default(0)
   tax                Float          @default(0)
   coverageCost       Float          @default(0)
+  // Extended laundry care options
+  washingTemp        String?
+  foldingOption      String?
+  ironPieces         Int            @default(0)
+  ironCost           Float          @default(0)
+  softenerCost       Float          @default(0)
+  hangersCost        Float          @default(0)
+  // Machine-based pricing (replaces bag-based)
+  machineCount       Int            @default(1)
+  // Extended oversized items
+  pillowItems        Int            @default(0)
+  duvetItems         Int            @default(0)
   paymentIntent      String? // pi_xxx
   payments           Payment[] // history
   events             OrderEvent[] // 👈 timeline history

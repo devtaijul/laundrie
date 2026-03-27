@@ -53,12 +53,10 @@ export const OrderCard = ({ order }: { order: Order }) => {
 
         <div className="space-y-2 mb-3">
           <p className="text-sm text-muted-foreground">
-            {order.regularBags > 0 ? `Regular Bags: ${order.regularBags}` : ""}
-            {order.largeBags > 0 ? ` Large Bags: ${order.largeBags}` : ""}
-            {order.smallBags > 0 ? ` Extra Large Bags: ${order.smallBags}` : ""}
-            {" , "}
-            {order.oversizedItems > 0
-              ? `Oversized Items: ${order.oversizedItems}`
+            {order.machineCount ?? 1} machine
+            {(order.machineCount ?? 1) > 1 ? "s" : ""}
+            {order.oversizedItems + (order.pillowItems ?? 0) + (order.duvetItems ?? 0) > 0
+              ? ` · ${order.oversizedItems + (order.pillowItems ?? 0) + (order.duvetItems ?? 0)} oversized item${order.oversizedItems + (order.pillowItems ?? 0) + (order.duvetItems ?? 0) > 1 ? "s" : ""}`
               : ""}
           </p>
         </div>

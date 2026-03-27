@@ -1,4 +1,3 @@
-import { OrderState } from "@/contexts/OrderContext";
 import { ReferralOption } from "@/types/global-type";
 
 export const referralOptions: ReferralOption[] = [
@@ -55,27 +54,6 @@ export const speedOptions = [
     availability: "Next available collection:\nTomorrow, 10:00 AM - 12:00 PM",
     price: "€30",
     priceUnit: "per washing machine (approx. 4–5 kg of laundry)",
-  },
-];
-
-export const bagTypes = (state: OrderState) => [
-  {
-    id: "smallBags" as const,
-    title: "Small",
-    subtitle: "Grocery bag size",
-    count: state.data.smallBags,
-  },
-  {
-    id: "regularBags" as const,
-    title: "Regular",
-    subtitle: "Kitchen bag size/hamper",
-    count: state.data.regularBags,
-  },
-  {
-    id: "largeBags" as const,
-    title: "Large",
-    subtitle: "Lawn/contractor bag size",
-    count: state.data.largeBags,
   },
 ];
 

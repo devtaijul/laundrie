@@ -31,10 +31,12 @@ export type ReferralOption = {
 
 export type LaundryCareField =
   | "detergent"
+  | "washingTemp"
+  | "foldingOption"
+  | "ironPieces"
   | "delicateCycle"
-  | "returnOnHangers"
   | "additionalRequests";
-export type LaundryCareValue = string | boolean;
+export type LaundryCareValue = string | boolean | number;
 
 export type OrderExtends = Order & {
   payments: Payment[];

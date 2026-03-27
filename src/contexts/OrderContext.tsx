@@ -13,27 +13,29 @@ export interface Address {
 
 export interface OrderData {
   // Step 1: Pickup Location
-  pickupAddress: string; // human-readable summary
+  pickupAddress: string;
   pickupSpot: string;
   pickupInstructions: string;
-  savedAddress?: Address; // <<— NEW: keep the full address
+  savedAddress?: Address;
 
   // Step 2: Delivery Speed
   deliverySpeed: "standard" | "express";
 
   // Step 3: Laundry Care
-  detergent: string;
+  detergent: "none" | "classic" | "classic-softener";
+  washingTemp: "30" | "40" | "60" | "90";
+  foldingOption: "fold" | "no-fold" | "hangers";
+  ironPieces: number;
   delicateCycle: boolean;
-  returnOnHangers: boolean;
   additionalRequests: string;
 
-  // Step 4: Bag Count
-  smallBags: number;
-  regularBags: number;
-  largeBags: number;
+  // Step 4: Machine Count
+  machineCount: number;
 
   // Step 5: Oversized Items
   oversizedItems: number;
+  pillowItems: number;
+  duvetItems: number;
 
   // Step 6: Coverage
   coverageType: "basic" | "premium" | "premium-plus";
@@ -68,14 +70,16 @@ const initialState: OrderState = {
     pickupSpot: "",
     pickupInstructions: "",
     deliverySpeed: "standard",
-    detergent: "Classic Scented",
+    detergent: "classic",
+    washingTemp: "40",
+    foldingOption: "fold",
+    ironPieces: 0,
     delicateCycle: false,
-    returnOnHangers: false,
     additionalRequests: "",
-    smallBags: 0,
-    regularBags: 0,
-    largeBags: 0,
+    machineCount: 1,
     oversizedItems: 0,
+    pillowItems: 0,
+    duvetItems: 0,
     coverageType: "basic",
     coverageCost: 0,
     promoCode: "",
