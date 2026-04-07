@@ -132,12 +132,11 @@ export const PRICING = {
     express: { base: 30, additional: 20 },
   },
   oversizedItem: 15, // per item: oversized, pillow, duvet
-  softener: 2.5,     // classic detergent + softener addon
-  hangers: 5,        // everything on hangers addon
-  iron: 3,           // per piece ironing
+  softener: 2.5, // classic detergent + softener addon
+  hangers: 5, // everything on hangers addon
+  iron: 3, // per piece ironing
   deliveryFee: 9,
-  taxRate: 0.21,
-  minimumCharge: 40,
+  taxRate: 0.15,
 } as const;
 
 export const orderCalculation = (state: OrderData) => {
@@ -165,15 +164,22 @@ export const orderCalculation = (state: OrderData) => {
         Math.max(0, machineCount - 1) * machinePricing.additional
       : 0;
 
+  console.log("machinesCost", machinesCost);
+
   // Oversized items cost (oversized items + pillows + duvets)
   const oversizedCost =
     (oversizedItems + pillowItems + duvetItems) * PRICING.oversizedItem;
 
+  console.log("oversizedCost", oversizedCost);
+
   // Laundry care addons
-  const softenerCost =
-    detergent === "classic-softener" ? PRICING.softener : 0;
+  const softenerCost = detergent === "classic-softener" ? PRICING.softener : 0;
+  console.log(softenerCost, "softernerCost");
+
   const hangersCost = foldingOption === "hangers" ? PRICING.hangers : 0;
+  console.log(hangersCost, "hangersCost");
   const ironCost = ironPieces * PRICING.iron;
+  console.log(ironCost, "ironCost");
 
   const subtotal =
     machinesCost +
@@ -182,11 +188,13 @@ export const orderCalculation = (state: OrderData) => {
     hangersCost +
     ironCost +
     PRICING.deliveryFee;
+
+  console.log(subtotal, "subtotal");
+
   const tax = subtotal * PRICING.taxRate;
-  const total = Math.max(
-    PRICING.minimumCharge,
-    subtotal + tax + (coverageCost ?? 0)
-  );
+  console.log(tax, "tax");
+  const total = subtotal + tax + (coverageCost ?? 0);
+  console.log(total, "total");
 
   return {
     machinesCost,
@@ -199,7 +207,6 @@ export const orderCalculation = (state: OrderData) => {
     tax,
     coverageCost: coverageCost ?? 0,
     total,
-    minimumCharge: PRICING.minimumCharge,
     isExpress,
   };
 };

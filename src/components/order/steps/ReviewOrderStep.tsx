@@ -36,7 +36,6 @@ export const ReviewOrderStep = () => {
     deliveryFee,
     subtotal,
     tax,
-    minimumCharge,
     total,
     coverageCost,
     isExpress,
@@ -120,8 +119,8 @@ export const ReviewOrderStep = () => {
               {machineCount} machine{machineCount > 1 ? "s" : ""}
             </p>
             <p className="text-sm text-muted-foreground">
-              {isExpress ? "€30 first machine" : "€25 first machine"}, +€20
-              each additional
+              {isExpress ? "€30 first machine" : "€25 first machine"}, +€20 each
+              additional
             </p>
             {totalOversized > 0 && (
               <p className="text-sm text-muted-foreground">
@@ -250,9 +249,6 @@ export const ReviewOrderStep = () => {
             <span>Estimated Total</span>
             <span className="text-primary">{formatMoney(total)}</span>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Minimum charge: {formatMoney(minimumCharge)}
-          </p>
         </div>
       </div>
 

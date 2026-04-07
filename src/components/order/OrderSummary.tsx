@@ -11,7 +11,6 @@ export const OrderSummary = ({
   tax,
   coverageType,
   coverageCost,
-  minimumCharge,
   total,
   isCents = false,
 }: {
@@ -24,7 +23,6 @@ export const OrderSummary = ({
   tax: number;
   coverageType: string;
   coverageCost: number;
-  minimumCharge: number;
   total: number;
   isCents?: boolean;
 }) => {
@@ -64,9 +62,6 @@ export const OrderSummary = ({
         <span>{title}</span>
         <span className="text-primary">{formatMoney(total, isCents)}</span>
       </div>
-      <p className="text-xs text-muted-foreground mt-2">
-        Minimum charge: {formatMoney(minimumCharge)}
-      </p>
     </div>
   );
 };

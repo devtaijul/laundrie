@@ -5,7 +5,7 @@ import { formatMoney } from "@/lib/utils";
 import React from "react";
 
 export const TotalBlock = () => {
-  const { total, minimumCharge } = useOrderCalculation();
+  const { total } = useOrderCalculation();
   return (
     <div className="bg-blue-50 rounded-lg p-3">
       <div className="flex justify-between items-center mb-2">
@@ -14,9 +14,6 @@ export const TotalBlock = () => {
           {formatMoney(total)}
         </span>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Minimum charge: {formatMoney(minimumCharge)}
-      </p>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { LaundryCareField, LaundryCareValue } from "@/types/global-type";
 import { cn } from "@/lib/utils";
 import { Minus, Plus } from "lucide-react";
 import { useState } from "react";
+import { TotalBlock } from "./TotalBlock";
 
 const DETERGENT_OPTIONS = [
   { value: "none", label: "No detergent", badge: null },
@@ -255,9 +256,10 @@ export const LaundryCareStep = () => {
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
         <div className="max-w-md mx-auto">
+          <TotalBlock />
           <Button
             onClick={handleContinue}
-            className="w-full bg-primary hover:bg-primary/90 text-white"
+            className="w-full bg-primary hover:bg-primary/90 text-white mt-3"
           >
             Continue
           </Button>

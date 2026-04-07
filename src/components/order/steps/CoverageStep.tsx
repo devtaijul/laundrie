@@ -14,21 +14,18 @@ export const CoverageStep = () => {
     state.data.coverageType
   );
 
-  const handleContinue = () => {
-    const selectedData = coverageOptions.find(
-      (option) => option.id === selectedCoverage
-    );
-    dispatch({
-      type: "UPDATE_DATA",
-      field: "coverageType",
-      value: selectedCoverage,
-    });
+  const handleSelect = (id: "basic" | "premium" | "premium-plus") => {
+    const selectedData = coverageOptions.find((option) => option.id === id);
+    setSelectedCoverage(id);
+    dispatch({ type: "UPDATE_DATA", field: "coverageType", value: id });
     dispatch({
       type: "UPDATE_DATA",
       field: "coverageCost",
       value: selectedData?.price || 0,
     });
+  };
 
+  const handleContinue = () => {
     dispatch({ type: "NEXT_STEP" });
   };
 
@@ -52,9 +49,7 @@ export const CoverageStep = () => {
           <div
             key={option.id}
             onClick={() =>
-              setSelectedCoverage(
-                option.id as "basic" | "premium" | "premium-plus"
-              )
+              handleSelect(option.id as "basic" | "premium" | "premium-plus")
             }
             className={`border rounded-lg p-4 cursor-pointer transition-colors ${
               selectedCoverage === option.id
