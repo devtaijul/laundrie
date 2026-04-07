@@ -111,34 +111,36 @@ export async function verifyOtpAndLoginAction(formData: FormData) {
   redirect("/dashboard");
 }
 
-// 3) Email + Password login (server action থেকে)
-export async function loginWithEmailAction(formData: FormData) {
-  const parsed = emailLoginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
+// 3) Email or Phone + Password login
+export async function loginWithCredentialsAction(formData: FormData) {
+  const identifier = (formData.get("identifier")?.toString() ?? "").trim();
+  const password = formData.get("password")?.toString() ?? "";
+
+  if (!identifier || !password) {
+    return { ok: false, error: "Email/phone and password are required" };
+  }
+
+  const isEmail = identifier.includes("@");
+  const user = await prisma.user.findFirst({
+    where: isEmail
+      ? { email: identifier.toLowerCase() }
+      : { phone: identifier },
   });
-  if (!parsed.success) {
-    const fe = parsed.error.flatten().fieldErrors;
+
+  if (!user || !user.passwordHash) {
     return {
       ok: false,
-      error: fe.email?.[0] || fe.password?.[0] || "Invalid credentials",
+      error: isEmail
+        ? "No account found with this email"
+        : "No account found with this phone number",
     };
   }
-  const { email, password } = parsed.data;
 
-  // আপনি চাইলে আগে DB চেক করে কাস্টম error দেখাতে পারেন (optional)
-  const user = await prisma.user.findFirst({
-    where: { email: email.toLowerCase() },
-  });
-  if (!user || !user.passwordHash) {
-    return { ok: false, error: "No account found with this email" };
-  }
-  const ok = (await hashToken(password)) === user.passwordHash;
+  const ok = hashToken(password) === user.passwordHash;
   if (!ok) return { ok: false, error: "Incorrect password" };
 
-  // NextAuth v5 signIn (Credentials)
   await signIn("credentials", {
-    identifier: email,
+    identifier,
     password,
     redirect: false,
   });
@@ -150,6 +152,13 @@ export async function loginWithEmailAction(formData: FormData) {
   } else {
     redirect(PAGES.ORDERS);
   }
+}
+
+// Keep for backwards compatibility
+export async function loginWithEmailAction(formData: FormData) {
+  const email = formData.get("email")?.toString() ?? "";
+  formData.set("identifier", email);
+  return loginWithCredentialsAction(formData);
 }
 
 export async function logoutAction() {
@@ -191,7 +200,7 @@ export async function registerUserAction({
     }
 
     // 2) hash
-    const passwordHash = await hashToken(password);
+    const passwordHash = hashToken(password);
 
     // 3) referral codes generate
     const tenDollarCode = await generateUniqueReferralCode("10");

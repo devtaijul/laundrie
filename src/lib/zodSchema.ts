@@ -1,4 +1,5 @@
 import z from "zod";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
 // ✅ Zod schema
 export const signupSchema = z.object({
@@ -18,7 +19,10 @@ export const signupSchema = z.object({
     ),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  phone: z.string().min(8, "Phone must be at least 8 digits"),
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .refine(isValidPhoneNumber, "Enter a valid phone number"),
   useType: z.enum(["PERSONAL", "BUSINESS"]),
   isOver65: z.enum(["yes", "no"], {
     error: "Please select an option",
@@ -66,7 +70,10 @@ export const accountFormSchema = z.object({
     .string()
     .min(2, "Last name must be at least 2 characters")
     .max(50, "Too long"),
-  phone: z.string().min(8, "Phone must be at least 8 digits"),
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .refine(isValidPhoneNumber, "Enter a valid phone number"),
   email: z.string().email("Enter a valid email address"),
   theme: ThemeEnum,
 });

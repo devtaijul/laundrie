@@ -8,6 +8,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TopNavigation } from "@/components/layout/TopNavigation";
@@ -248,10 +249,18 @@ export default function Signup() {
         </div>
 
         <div>
-          <Input
-            placeholder="Enter your phone number"
-            className="h-12"
-            {...register("phone")}
+          <Controller
+            control={control}
+            name="phone"
+            render={({ field }) => (
+              <PhoneInput
+                defaultCountry="US"
+                placeholder="Enter your phone number"
+                className="h-12"
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
           />
           <ErrorSlot message={errors.phone?.message} />
         </div>

@@ -1,44 +1,32 @@
 "use client";
 
-import {
-  loginWithEmailAction,
-  requestOtpAction,
-  verifyOtpAndLoginAction,
-} from "@/actions/auth.actions";
-import { checkIfPhoneExists } from "@/actions/user.actions";
+import { loginWithCredentialsAction } from "@/actions/auth.actions";
 import { TopNavigation } from "@/components/layout/TopNavigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAsyncAction } from "@/hooks/use-async-action";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Eye, EyeOff, Mail, Phone } from "lucide-react";
+import { Eye, EyeOff, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { signIn } from "next-auth/react";
 
-// ---------- Zod client schemas ----------
-const phoneSchema = z.object({
-  phone: z
+// ---------- Zod schema ----------
+const loginSchema = z.object({
+  identifier: z
     .string()
-    .regex(/^\+?\d{8,15}$/, "Enter a valid phone number with country code"),
+    .min(1, "Email or phone number is required")
+    .refine(
+      (val) => val.includes("@") || /^\+?\d{7,15}$/.test(val.replace(/[\s\-().]/g, "")),
+      "Enter a valid email or phone number"
+    ),
+  password: z.string().min(1, "Password is required"),
 });
 
-const otpSchema = z.object({
-  phone: phoneSchema.shape.phone,
-  otp: z.string().regex(/^\d{6}$/, "Enter the 6-digit code"),
-});
+type LoginData = z.infer<typeof loginSchema>;
 
-const emailLoginSchema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-type Step = "initial" | "otp" | "email";
-
-// fixed-height error
 const ErrorSlot = ({ message }: { message?: string }) => (
   <div className="h-5 mt-1">
     {message ? <p className="text-xs text-red-500">{message}</p> : null}
@@ -46,285 +34,38 @@ const ErrorSlot = ({ message }: { message?: string }) => (
 );
 
 export default function Login() {
-  const router = useRouter();
-  const [step, setStep] = useState<Step>("initial");
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isGooglePending, setIsGooglePending] = useState(false);
 
-  // phone form
   const {
-    register: registerPhone,
-    handleSubmit: handleSubmitPhone,
-    formState: { errors: phoneErrors },
-    watch,
-    getValues: getPhoneValues,
-  } = useForm<z.infer<typeof phoneSchema>>({
-    resolver: zodResolver(phoneSchema),
-    defaultValues: { phone: "" },
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { identifier: "", password: "" },
     mode: "onBlur",
   });
 
-  // otp form
-  const {
-    register: registerOtp,
-    handleSubmit: handleSubmitOtp,
-    setValue: setOtpValue,
-    getValues: getOtpValues,
-    formState: { errors: otpErrors },
-  } = useForm<z.infer<typeof otpSchema>>({
-    resolver: zodResolver(otpSchema),
-    defaultValues: { phone: "", otp: "" },
-    mode: "onBlur",
-  });
-
-  // email form
-  const {
-    register: registerEmail,
-    handleSubmit: handleSubmitEmail,
-    formState: { errors: emailErrors },
-  } = useForm<z.infer<typeof emailLoginSchema>>({
-    resolver: zodResolver(emailLoginSchema),
-    defaultValues: { email: "", password: "" },
-    mode: "onBlur",
-  });
-
-  const {
-    runAction: checkPhoneNumberExist,
-    isProcessing: checkingPhoneNumberExist,
-  } = useAsyncAction(checkIfPhoneExists, {
-    onSuccess: async () => {
-      const fd = new FormData();
-      fd.set("phone", getPhoneValues("phone"));
-      const res = await requestOtpAction(fd);
-      if (!res?.ok) {
-        setServerError(res?.error ?? "Failed to send code");
-        return;
-      }
-      // set phone into otp form default
-      setOtpValue("phone", getPhoneValues("phone"));
-      // success হলে otp step দেখাবো
-      setStep("otp");
-    },
-    onError: (error) => {
-      console.error("Error checking phone", error);
-      router.push("/signup");
-    },
-  });
-
-  const onRequestOtp = handleSubmitPhone((data) => {
-    setServerError(null);
-    checkPhoneNumberExist(data.phone);
-  });
-
-  const onVerifyOtp = handleSubmitOtp((data) => {
+  const onSubmit = handleSubmit((data) => {
     setServerError(null);
     startTransition(async () => {
       const fd = new FormData();
-      fd.set("phone", data.phone);
-      fd.set("otp", data.otp);
-      const res = await verifyOtpAndLoginAction(fd);
-      if (!res?.ok && res?.error) setServerError(res.error);
-      // success হলে action এর ভেতরেই redirect হবে
-    });
-  });
-
-  const onEmailLogin = handleSubmitEmail((data) => {
-    setServerError(null);
-    startTransition(async () => {
-      const fd = new FormData();
-      fd.set("email", data.email);
+      fd.set("identifier", data.identifier);
       fd.set("password", data.password);
-      const { ok, error } = await loginWithEmailAction(fd);
-      if (!ok && error) {
-        setServerError(error);
+      const res = await loginWithCredentialsAction(fd);
+      if (res && !res.ok && res.error) {
+        setServerError(res.error);
       }
-      // success হলে action এর ভেতরেই redirect হবে
     });
   });
 
-  const renderInitialStep = () => (
-    <form className="space-y-6 max-w-lg mx-auto" onSubmit={onRequestOtp}>
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">
-          Welcome to the laundry platform
-        </h1>
-        <p className="text-muted-foreground">
-          Enter your phone number to continue
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        <div className="relative">
-          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-          <Input
-            type="tel"
-            placeholder="Enter your phone number"
-            className="pl-10 h-12"
-            {...registerPhone("phone")}
-          />
-        </div>
-        <ErrorSlot message={phoneErrors.phone?.message} />
-
-        {serverError && <p className="text-sm text-red-500">{serverError}</p>}
-
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="w-full h-12 bg-gradient-primary hover:bg-primary-hover"
-        >
-          {checkingPhoneNumberExist ? "Checking..." : "Request OTP"}
-        </Button>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-card text-muted-foreground">OR</span>
-          </div>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setStep("email")}
-          className="w-full h-12 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-        >
-          CONTINUE WITH EMAIL
-        </Button>
-      </div>
-
-      <p className="text-xs text-muted-foreground text-center leading-relaxed">
-        By proceeding, you consent to receive SMS messages. Message and data
-        rates may apply. Text &quot;STOP&quot; to opt out.
-      </p>
-    </form>
-  );
-
-  const renderOtpStep = () => (
-    <form className="space-y-6 max-w-lg mx-auto" onSubmit={onVerifyOtp}>
-      <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => setStep("initial")}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <h2 className="text-lg font-medium">Verify phone</h2>
-      </div>
-
-      <p className="text-muted-foreground">
-        We sent a 6-digit code to{" "}
-        <span className="font-medium">{getPhoneValues("phone")}</span>
-      </p>
-
-      <input id="otp-phone-hidden" type="hidden" {...registerOtp("phone")} />
-
-      <div className="space-y-4">
-        <Input
-          inputMode="numeric"
-          maxLength={6}
-          placeholder="Enter 6-digit code"
-          className="h-12 tracking-widest text-center"
-          {...registerOtp("otp")}
-        />
-        <ErrorSlot
-          message={otpErrors.otp?.message || otpErrors.phone?.message}
-        />
-
-        {serverError && <p className="text-sm text-red-500">{serverError}</p>}
-
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="w-full h-12 bg-gradient-primary hover:bg-primary-hover"
-        >
-          Verify & Continue
-        </Button>
-
-        <button
-          type="button"
-          onClick={() => onRequestOtp()}
-          className="text-sm text-primary hover:underline"
-        >
-          Resend code
-        </button>
-      </div>
-    </form>
-  );
-
-  const renderEmailStep = () => (
-    <form className="space-y-6 max-w-lg mx-auto" onSubmit={onEmailLogin}>
-      <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => setStep("initial")}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <h2 className="text-lg font-medium">Continue with email</h2>
-      </div>
-
-      <div className="space-y-3">
-        <div>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-            <Input
-              type="email"
-              placeholder="Enter your email address"
-              className="pl-10 h-12"
-              {...registerEmail("email")}
-            />
-          </div>
-          <ErrorSlot message={emailErrors.email?.message} />
-        </div>
-
-        <div>
-          <div className="relative">
-            <Input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
-              className="pr-10 h-12"
-              {...registerEmail("password")}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setShowPassword((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2"
-            >
-              {showPassword ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-          <ErrorSlot message={emailErrors.password?.message} />
-        </div>
-
-        {serverError && <p className="text-sm text-red-500">{serverError}</p>}
-
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="w-full h-12 bg-gradient-primary hover:bg-primary-hover"
-        >
-          Log in
-        </Button>
-      </div>
-
-      <p className="text-xs text-muted-foreground text-center leading-relaxed">
-        By clicking &quot;Log in&quot; you agree to our Terms of Service and
-        Privacy Policy.
-      </p>
-    </form>
-  );
+  const onGoogleLogin = async () => {
+    setIsGooglePending(true);
+    await signIn("google", { callbackUrl: "/orders" });
+  };
 
   return (
     <div className="min-h-screen">
@@ -333,17 +74,115 @@ export default function Login() {
         <Card className="border-none shadow-none">
           <CardHeader className="pb-6">
             <CardTitle className="text-center text-sm font-medium text-muted-foreground uppercase tracking-wider">
-              {step === "initial"
-                ? "Login"
-                : step === "otp"
-                  ? "Verify code"
-                  : "Email Login"}
+              Login
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {step === "initial" && renderInitialStep()}
-            {step === "otp" && renderOtpStep()}
-            {step === "email" && renderEmailStep()}
+            <form className="space-y-6 max-w-lg mx-auto" onSubmit={onSubmit}>
+              <div className="text-center space-y-2">
+                <h1 className="text-2xl font-semibold text-foreground">
+                  Welcome back
+                </h1>
+                <p className="text-muted-foreground">
+                  Sign in to your account
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {/* Identifier */}
+                <div>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                    <Input
+                      type="text"
+                      placeholder="Email or phone number"
+                      className="pl-10 h-12"
+                      {...register("identifier")}
+                    />
+                  </div>
+                  <ErrorSlot message={errors.identifier?.message} />
+                </div>
+
+                {/* Password */}
+                <div>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      className="pr-10 h-12"
+                      {...register("password")}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowPassword((s) => !s)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <ErrorSlot message={errors.password?.message} />
+                </div>
+
+                {serverError && (
+                  <p className="text-sm text-red-500">{serverError}</p>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="w-full h-12 bg-gradient-primary hover:bg-primary-hover"
+                >
+                  {isPending ? "Signing in..." : "Log in"}
+                </Button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-card text-muted-foreground">OR</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onGoogleLogin}
+                  disabled={isGooglePending}
+                  className="w-full h-12 flex items-center gap-3"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    />
+                  </svg>
+                  {isGooglePending ? "Redirecting..." : "Continue with Google"}
+                </Button>
+              </div>
+
+              <p className="text-xs text-muted-foreground text-center leading-relaxed">
+                By signing in you agree to our Terms of Service and Privacy
+                Policy.
+              </p>
+            </form>
           </CardContent>
         </Card>
 

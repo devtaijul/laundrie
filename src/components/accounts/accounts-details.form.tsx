@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
 import { Input } from "../ui/input";
+import { PhoneInput } from "../ui/phone-input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -15,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, HelpCircle, Phone, Mail, ChevronRight } from "lucide-react";
+import { Mail, ChevronRight } from "lucide-react";
 import { logoutAction } from "@/actions/auth.actions";
 import { AccountFormValues, accountFormSchema } from "@/lib/zodSchema";
 import { useAsyncAction } from "@/hooks/use-async-action";
@@ -93,14 +94,18 @@ export const AccountsDetailsForm: React.FC<{
             </div>
 
             {/* Phone Field */}
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-muted-foreground" />
-              <Input
-                {...register("phone")}
-                className="border-border bg-background pl-10"
-                placeholder="Phone number"
-                aria-label="Phone number"
-                inputMode="tel"
+            <div>
+              <Controller
+                control={control}
+                name="phone"
+                render={({ field }) => (
+                  <PhoneInput
+                    defaultCountry="US"
+                    placeholder="Phone number"
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
               />
               {errors.phone && (
                 <p className="mt-1 text-xs text-destructive">
