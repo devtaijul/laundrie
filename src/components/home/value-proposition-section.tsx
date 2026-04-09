@@ -1,42 +1,64 @@
+import Image from "next/image";
+
 export const ValuePropositionSection = () => {
   return (
-    <section className="py-20 bg-secondary">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Decorative Images */}
-        <div className="flex justify-center items-center gap-4 mb-8 flex-wrap">
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-gradient-to-br from-yellow-200 to-yellow-300 flex items-center justify-center overflow-hidden">
-            <div className="w-full h-full bg-gradient-to-br from-yellow-300 to-green-300 opacity-80" />
-          </div>
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-            <div className="w-full h-full bg-gradient-to-br from-gray-200 to-blue-100" />
-          </div>
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-gradient-to-br from-purple-200 to-purple-300 overflow-hidden">
-            <div className="w-full h-full bg-gradient-to-br from-purple-300 to-pink-200" />
-          </div>
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 overflow-hidden">
-            <div className="w-full h-full bg-gradient-to-br from-blue-200 to-cyan-100" />
+    <section className="bg-[#e4f7ff] py-10 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative py-56">
+        {/* Rotated clothing images at corners */}
+        {/* Top-left: shirt (rotated +22deg) */}
+        <div className="absolute -left-4 -top-24 w-72 h-72 pointer-events-none">
+          <div className="rotate-22 w-full h-full relative">
+            <Image
+              src="/assets/about-shirt.png"
+              alt="Shirt"
+              fill
+              className="object-contain rounded-3xl"
+            />
           </div>
         </div>
 
-        {/* Main Quote */}
-        <div className="text-center max-w-4xl mx-auto">
-          <p className="text-2xl md:text-3xl lg:text-4xl font-medium text-foreground italic leading-relaxed">
+        {/* Top-right: pants (rotated -26deg) */}
+        <div className="absolute -right-4 -top-24 w-60 h-72 pointer-events-none">
+          <div className="-rotate-26 w-full h-full relative">
+            <Image
+              src="/assets/about-pants.png"
+              alt="Pants"
+              fill
+              className="object-contain rounded-3xl"
+            />
+          </div>
+        </div>
+
+        {/* Bottom-left: towel (rotated +11deg) */}
+        <div className="absolute left-20 -bottom-20 w-72 h-60 pointer-events-none">
+          <div className="rotate-11 w-full h-full relative">
+            <Image
+              src="/assets/about-towel.png"
+              alt="Towel"
+              fill
+              className="object-contain rounded-3xl"
+            />
+          </div>
+        </div>
+
+        {/* Bottom-right: bedsheet (rotated -10deg) */}
+        <div className="absolute -right-5 -bottom-16 w-96 h-64 pointer-events-none">
+          <div className="-rotate-10 w-full h-full relative">
+            <Image
+              src="/assets/about-bedsheet.png"
+              alt="Bedsheet"
+              fill
+              className="object-contain rounded-3xl"
+            />
+          </div>
+        </div>
+
+        {/* Centered text */}
+        <div className="relative z-10 text-center max-w-233 mx-auto">
+          <p className="text-5xl font-bold text-[#002b28] leading-[1.07] tracking-tight">
             We combine experience, technology, and passion to simplify your
             laundry needs and exceed your expectations
           </p>
-        </div>
-
-        {/* Bottom Decorative Images */}
-        <div className="flex justify-center items-center gap-4 mt-8 flex-wrap">
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-gradient-to-br from-orange-200 to-red-200 overflow-hidden">
-            <div className="w-full h-full bg-gradient-to-br from-orange-300 to-red-300" />
-          </div>
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-gradient-to-br from-white to-gray-100 overflow-hidden">
-            <div className="w-full h-full bg-gradient-to-br from-white to-gray-200" />
-          </div>
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 overflow-hidden">
-            <div className="w-full h-full bg-gradient-to-br from-cyan-100 to-blue-200" />
-          </div>
         </div>
       </div>
     </section>

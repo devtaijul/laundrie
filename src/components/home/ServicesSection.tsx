@@ -3,11 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PAGES } from "@/config/pages.config";
 
 import {
-  Shirt,
-  Sparkles,
-  Scissors,
   Calendar,
   Package,
+  Sparkles,
   Truck,
 } from "lucide-react";
 import Image from "next/image";
@@ -15,19 +13,19 @@ import Link from "next/link";
 
 const services = [
   {
-    icon: Shirt,
+    iconSrc: "/assets/service-wash-dry-fold.png",
     title: "Wash-Dry-Fold",
     description:
       "In addition to dry cleaning and laundry, we offer a range of services 7 days a week.",
   },
   {
-    icon: Sparkles,
+    iconSrc: "/assets/service-dry-cleaning.png",
     title: "Dry Cleaning",
     description:
       "In addition to dry cleaning and laundry, we offer a range of services 7 days a week.",
   },
   {
-    icon: Scissors,
+    iconSrc: "/assets/service-clothing-repairs.png",
     title: "Clothing Repairs",
     description:
       "In addition to dry cleaning and laundry, we offer a range of services 7 days a week.",
@@ -111,14 +109,20 @@ export const ServicesSection = () => {
             {services.map((service, index) => (
               <Card
                 key={index}
-                className="bg-white border-0 shadow-[0px_0px_50px_0px_rgba(0,_0,_0,_0.1)] hover:shadow-[0px_0px_50px_13px_rgba(0,_0,_0,_0.1)] transition-shadow"
+                className="bg-white border-0 shadow-[0px_0px_50px_0px_rgba(0,0,0,0.1)] hover:shadow-[0px_0px_50px_13px_rgba(0,0,0,0.1)] transition-shadow"
                 style={{
                   marginTop: `${index * 20}px`,
                 }}
               >
                 <CardContent className="p-8 space-y-4">
-                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <service.icon className="w-7 h-7 text-primary" />
+                  <div className="w-16.25 h-16.25">
+                    <Image
+                      src={service.iconSrc}
+                      alt={service.title}
+                      width={65}
+                      height={65}
+                      className="object-contain"
+                    />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground">
                     {service.title}
@@ -153,7 +157,7 @@ export const ServicesSection = () => {
               {processSteps.map((step, index) => (
                 <Card key={index} className="bg-secondary border-0 shadow-none">
                   <CardContent className="p-5 flex gap-4 items-start">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                       <step.icon className="w-5 h-5 text-primary" />
                     </div>
                     <div>
