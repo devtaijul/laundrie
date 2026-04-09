@@ -13,35 +13,32 @@ const benefits = [
 
 export const PromoSection = () => {
   return (
-    <section className="py-16 md:py-20">
-      <div className="max-w-7xl mx-auto py-16 pl-4 sm:pl-6 lg:pl-8 bg-primary rounded-lg overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+    <section className="py-10 sm:py-16 md:py-20 px-4 sm:px-0">
+      <div className="max-w-7xl mx-auto py-10 sm:py-16 pl-4 sm:pl-6 lg:pl-8 bg-primary rounded-lg overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
           {/* Left Content */}
-          <div className="space-y-6 text-white">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+          <div className="space-y-4 sm:space-y-6 text-white pr-4 sm:pr-0">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
               <span className="relative inline-block px-3 py-1">
-                {/* Rotated Background */}
                 <span className="absolute inset-0 bg-white -rotate-2 transform rounded-sm shadow-sm"></span>
-
-                {/* Straight Text */}
                 <span className="relative z-10 text-primary">
                   Exclusive Deals
                 </span>
               </span>{" "}
               You Don&apos;t Want to Miss
             </h2>
-            <p className="text-white/90">
+            <p className="text-white/90 text-sm sm:text-base">
               Don&apos;t miss out on our exclusive deals! Get 25% off your first
               laundry service when you book today.
             </p>
 
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 text-primary" />
                   </div>
-                  <span className="text-white">{benefit}</span>
+                  <span className="text-white text-sm sm:text-base">{benefit}</span>
                 </div>
               ))}
             </div>
@@ -49,30 +46,15 @@ export const PromoSection = () => {
             <Link href={PAGES.LAUNDRIE}>
               <Button
                 size="lg"
-                className="bg-white text-primary hover:bg-white/90 rounded-full px-8 mt-4"
+                className="bg-white text-primary hover:bg-white/90 rounded-full px-6 sm:px-8 mt-2 sm:mt-4 text-sm sm:text-base"
               >
                 SCHEDULE A PICKUP
               </Button>
             </Link>
           </div>
 
-          {/* Right Content - Discount Badge & Image */}
+          {/* Right Content - Image */}
           <div className="relative flex justify-center items-center">
-            {/* Discount Badge */}
-            {/* <div className="absolute -top-4 right-8 lg:right-16 z-10">
-              <div className="relative">
-                <div className="w-24 h-24 bg-yellow-400 rounded-full flex flex-col items-center justify-center transform rotate-12 shadow-lg">
-                  <span className="text-2xl font-bold text-foreground">
-                    25%
-                  </span>
-                  <span className="text-xs font-medium text-foreground">
-                    DISCOUNT
-                  </span>
-                </div>
-              </div>
-            </div> */}
-
-            {/* Image Placeholder */}
             <Image
               src="/assets/laundrase discount that you don,t miss.png"
               alt="Placeholder"

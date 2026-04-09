@@ -114,31 +114,34 @@ export const TestimonialsSection = () => {
 
   return (
     <section className="bg-[#f5f5f5] py-10">
-      <div className="max-w-360 mx-auto px-18">
-        <h2 className="text-[48px] font-semibold text-center text-black tracking-tight mb-12">
+      <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-18">
+        <h2 className="text-2xl sm:text-4xl lg:text-[48px] font-semibold text-center text-black tracking-tight mb-8 lg:mb-12">
           Don&apos;t just take our word for it
         </h2>
 
-        {/* Row 1: 2 standard cards + 1 tall card spanning both rows */}
-        <div className="grid grid-cols-3 gap-6">
-          {/* Col 1: Sophie */}
-          <TestimonialCard testimonial={sophie} />
-
-          {/* Col 2: Jacob */}
-          <TestimonialCard testimonial={jacob} />
-
-          {/* Col 3: Isabella - spans 2 rows */}
-          <TestimonialCard testimonial={isabella} className="row-span-2" />
-
-          {/* Row 2 Col 1-2: Harry (wide) */}
-          <TestimonialCard testimonial={harry} className="col-span-2" />
+        {/* Mobile: Single column stack */}
+        <div className="flex flex-col gap-4 lg:hidden">
+          {testimonials.map((t, i) => (
+            <TestimonialCard key={i} testimonial={t} />
+          ))}
         </div>
 
-        {/* Row 3: 2 standard cards + 1 card */}
-        <div className="grid grid-cols-3 gap-6 mt-6">
-          <TestimonialCard testimonial={oliver} />
-          <TestimonialCard testimonial={amelia} />
-          <div /> {/* empty cell to align under isabella */}
+        {/* Desktop: Complex grid layout */}
+        <div className="hidden lg:block">
+          {/* Row 1: 2 standard cards + 1 tall card spanning both rows */}
+          <div className="grid grid-cols-3 gap-6">
+            <TestimonialCard testimonial={sophie} />
+            <TestimonialCard testimonial={jacob} />
+            <TestimonialCard testimonial={isabella} className="row-span-2" />
+            <TestimonialCard testimonial={harry} className="col-span-2" />
+          </div>
+
+          {/* Row 3: 2 standard cards + 1 card */}
+          <div className="grid grid-cols-3 gap-6 mt-6">
+            <TestimonialCard testimonial={oliver} />
+            <TestimonialCard testimonial={amelia} />
+            <div />
+          </div>
         </div>
       </div>
     </section>

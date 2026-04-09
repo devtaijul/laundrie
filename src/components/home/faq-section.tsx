@@ -32,15 +32,15 @@ const faqs = [
 
 export const FAQSection = () => {
   return (
-    <section className="py-20 bg-background">
+    <section className="py-12 sm:py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-8 lg:gap-12">
           {/* Left Content */}
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4">
               Popular Questions
             </h2>
-            <p className="text-muted-foreground mb-8">
+            <p className="text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base">
               You can use our services in any convenient way – the choice is
               yours.
             </p>
@@ -52,10 +52,10 @@ export const FAQSection = () => {
                   value={`item-${index}`}
                   className="border-0 bg-transparent"
                 >
-                  <AccordionTrigger className="text-left text-foreground hover:no-underline py-4 text-base font-medium">
+                  <AccordionTrigger className="text-left text-foreground hover:no-underline py-3 sm:py-4 text-sm sm:text-base font-medium">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground pb-4">
+                  <AccordionContent className="text-muted-foreground pb-3 sm:pb-4 text-sm">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>
@@ -64,7 +64,7 @@ export const FAQSection = () => {
           </div>
 
           {/* Right Content - Images */}
-          <div className="">
+          <div>
             <Image
               src={"/assets/popular-questions.png"}
               alt="Woman holding clean folded towels"

@@ -5,23 +5,24 @@ import Link from "next/link";
 
 export const Footer = () => {
   return (
-    <footer className=" text-white  pb-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-primary py-16 rounded-xl">
-        <div className="flex items-center justify-between w-full pb-10">
+    <footer className="text-white pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-primary py-10 sm:py-16 rounded-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full pb-8 sm:pb-10 gap-4 sm:gap-0">
           <div>
             <Link href={PAGES.HOME}>
               <Image
                 src="/assets/laundrie-logo-light.png"
                 alt="Logo"
-                width={300}
-                height={100}
+                width={200}
+                height={80}
+                className="w-40 sm:w-75"
               />
             </Link>
           </div>
-          <div className="flex gap-3 mb-4 md:mb-0">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <Link
               href="#"
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm transition-colors"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -30,24 +31,24 @@ export const Footer = () => {
             </Link>
             <Link
               href="#"
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm transition-colors"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors"
             >
               <Facebook className="w-4 h-4" />
               Facebook
             </Link>
             <Link
               href="#"
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm transition-colors"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm transition-colors"
             >
               <Instagram className="w-4 h-4" />
               Instagram
             </Link>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8">
           {/* Logo & Tagline */}
-          <div className="lg:col-span-2 space-y-4">
-            <p className="text-white/80 text-4xl md:text-5xl font-bold">
+          <div className="col-span-2 lg:col-span-2 space-y-4">
+            <p className="text-white/80 text-2xl sm:text-4xl md:text-5xl font-bold">
               Laundry Tips and Exclusive Offers Await!
             </p>
           </div>
