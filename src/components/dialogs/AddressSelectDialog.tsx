@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 
 import {
@@ -10,6 +12,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useOrder } from "@/contexts/OrderContext";
+import type { ValidateAddressResult } from "@/app/api/validate-address/route";
+import { SERVICE_AREA_ERROR } from "@/lib/service-area";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
@@ -22,7 +26,6 @@ type AddressForm = {
 };
 
 export function summarizeAddress(a: AddressForm) {
-  // e.g., "123 Nostrand Ave, Brooklyn, NY 11206"
   const parts = [
     a.line1.trim(),
     a.city.trim(),
@@ -40,18 +43,9 @@ export const AddressSelectDialog = ({
 }) => {
   const { state, dispatch } = useOrder();
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({
-    line1: "",
-    line2: "",
-    city: "",
-    zip: "",
-    state: "",
-  });
-
   const saved = state.data.savedAddress;
   const hasAddress = Boolean(saved && saved.line1);
 
-  // local form state for dialog
   const [addr, setAddr] = useState<AddressForm>({
     line1: saved?.line1 ?? "",
     line2: saved?.line2 ?? "",
@@ -60,52 +54,99 @@ export const AddressSelectDialog = ({
     state: saved?.state ?? "",
   });
 
-  const handleSaveAddress = () => {
-    // basic required validation
-    if (!addr.line1 || !addr.city || !addr.zip || !addr.state) {
-      // এখানে চাইলে toast দেখাতে পারো
-      setErrors({
-        line1: addr.line1 ? "" : "Address is required",
-        city: addr.city ? "" : "City is required",
-        zip: addr.zip ? "" : "Zip code is required",
-        state: addr.state ? "" : "State is required",
-      });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [serviceAreaError, setServiceAreaError] = useState("");
+  const [isValidating, setIsValidating] = useState(false);
+
+  const handleSaveAddress = async () => {
+    // Basic required validation
+    const newErrors: Record<string, string> = {};
+    if (!addr.line1) newErrors.line1 = "Address is required";
+    if (!addr.city) newErrors.city = "City is required";
+    if (!addr.zip) newErrors.zip = "Zip code is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
-    // save into context
-    dispatch({
-      type: "UPDATE_DATA",
-      field: "savedAddress",
-      value: {
-        line1: addr.line1,
-        line2: addr.line2 || undefined,
-        city: addr.city,
-        zip: addr.zip,
-        state: addr.state,
-      },
-    });
+    setErrors({});
+    setServiceAreaError("");
+    setIsValidating(true);
 
-    // also keep a human-readable summary
-    dispatch({
-      type: "UPDATE_DATA",
-      field: "pickupAddress",
-      value: summarizeAddress(addr),
-    });
+    try {
+      const res = await fetch("/api/validate-address", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          line1: addr.line1,
+          city: addr.city,
+          zip: addr.zip,
+        }),
+      });
 
-    setOpen(false);
+      const result: ValidateAddressResult = await res.json();
+
+      if (!result.ok) {
+        setServiceAreaError("Address lookup failed. Please try again.");
+        return;
+      }
+
+      if (!result.valid) {
+        if (result.reason === "address_not_found") {
+          setServiceAreaError("Please enter a valid address in the Netherlands");
+        } else if (result.reason === "outside_service_area") {
+          setServiceAreaError(SERVICE_AREA_ERROR);
+        } else {
+          setServiceAreaError("Address could not be validated. Please try again.");
+        }
+        return;
+      }
+
+      // Address is valid — save with validation metadata
+      dispatch({
+        type: "UPDATE_DATA",
+        field: "savedAddress",
+        value: {
+          line1: result.address?.line1 || addr.line1,
+          line2: addr.line2 || undefined,
+          city: result.city || addr.city,
+          zip: result.address?.postalCode || addr.zip,
+          state: addr.state,
+          isValidated: true,
+          isServiceAreaAllowed: true,
+          municipality: result.municipality,
+          country: result.address?.country ?? "Netherlands",
+        },
+      });
+
+      dispatch({
+        type: "UPDATE_DATA",
+        field: "pickupAddress",
+        value: summarizeAddress({
+          ...addr,
+          city: result.city || addr.city,
+          zip: result.address?.postalCode || addr.zip,
+        }),
+      });
+
+      setOpen(false);
+    } catch {
+      setServiceAreaError("Something went wrong. Please try again.");
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* You can also keep a visible "Add address" button via <DialogTrigger> if you prefer */}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {hasAddress ? "Edit Address" : "Add Address"}
           </DialogTitle>
           <DialogDescription>
-            Enter your address to see availability.
+            We serve Haarlem, Heemstede, Zandvoort, and Bloemendaal.
           </DialogDescription>
         </DialogHeader>
 
@@ -116,90 +157,78 @@ export const AddressSelectDialog = ({
               className={errors.line1 ? "border-red-500" : ""}
               value={addr.line1}
               onChange={(e) => {
-                if (e.target.value) {
-                  setErrors((p) => ({ ...p, line1: "" }));
-                } else {
-                  setErrors((p) => ({ ...p, line1: "Address is required" }));
-                }
+                setErrors((p) => ({ ...p, line1: e.target.value ? "" : "Address is required" }));
                 setAddr((p) => ({ ...p, line1: e.target.value }));
+                setServiceAreaError("");
               }}
-              placeholder="123 Nostrand Ave"
+              placeholder="Grote Markt 1"
             />
+            {errors.line1 && <p className="text-xs text-red-500 mt-1">{errors.line1}</p>}
           </div>
+
           <div>
-            <label className="text-sm text-muted-foreground">
-              Apartment/suite
-            </label>
+            <label className="text-sm text-muted-foreground">Apartment/suite</label>
             <Input
-              className={errors.line2 ? "border-red-500" : ""}
               value={addr.line2}
-              onChange={(e) => {
-                if (e.target.value) {
-                  setErrors((p) => ({ ...p, line2: "" }));
-                } else {
-                  setErrors((p) => ({ ...p, line2: "Address is required" }));
-                }
-                setAddr((p) => ({ ...p, line2: e.target.value }));
-              }}
+              onChange={(e) => setAddr((p) => ({ ...p, line2: e.target.value }))}
               placeholder="Apt / Suite (optional)"
             />
           </div>
+
           <div>
             <label className="text-sm text-muted-foreground">City</label>
             <Input
+              className={errors.city ? "border-red-500" : ""}
               value={addr.city}
               onChange={(e) => {
-                if (e.target.value) {
-                  setErrors((p) => ({ ...p, city: "" }));
-                } else {
-                  setErrors((p) => ({ ...p, city: "City is required" }));
-                }
+                setErrors((p) => ({ ...p, city: e.target.value ? "" : "City is required" }));
                 setAddr((p) => ({ ...p, city: e.target.value }));
+                setServiceAreaError("");
               }}
-              placeholder="Brooklyn"
+              placeholder="Haarlem"
             />
+            {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm text-muted-foreground">Zip Code</label>
+              <label className="text-sm text-muted-foreground">Postal Code</label>
               <Input
                 className={errors.zip ? "border-red-500" : ""}
                 value={addr.zip}
                 onChange={(e) => {
-                  if (e.target.value.length) {
-                    setErrors((p) => ({ ...p, zip: "" }));
-                  } else {
-                    setErrors((p) => ({ ...p, zip: "Zip code is required" }));
-                  }
+                  setErrors((p) => ({ ...p, zip: e.target.value ? "" : "Postal code is required" }));
                   setAddr((p) => ({ ...p, zip: e.target.value }));
+                  setServiceAreaError("");
                 }}
-                placeholder="11206"
+                placeholder="2011 AA"
               />
+              {errors.zip && <p className="text-xs text-red-500 mt-1">{errors.zip}</p>}
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">State</label>
+              <label className="text-sm text-muted-foreground">Province (optional)</label>
               <Input
-                className={errors.state ? "border-red-500" : ""}
                 value={addr.state}
-                onChange={(e) => {
-                  if (e.target.value.length) {
-                    setErrors((p) => ({ ...p, state: "" }));
-                  } else {
-                    setErrors((p) => ({ ...p, state: "State is required" }));
-                  }
-                  setAddr((p) => ({ ...p, state: e.target.value }));
-                }}
-                placeholder="NY"
+                onChange={(e) => setAddr((p) => ({ ...p, state: e.target.value }))}
+                placeholder="Noord-Holland"
               />
             </div>
           </div>
+
+          {serviceAreaError && (
+            <p className="text-sm text-red-500 bg-red-50 rounded-md px-3 py-2">
+              {serviceAreaError}
+            </p>
+          )}
         </div>
 
         <DialogFooter className="mt-4">
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button onClick={handleSaveAddress}>Save</Button>
+          <Button onClick={handleSaveAddress} disabled={isValidating}>
+            {isValidating ? "Checking..." : "Save"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

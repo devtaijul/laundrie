@@ -13,41 +13,40 @@ import { useState } from "react";
 
 import { AddressSelectDialog } from "@/components/dialogs/AddressSelectDialog";
 import { useOrder } from "@/contexts/OrderContext";
+import { SERVICE_AREA_ERROR } from "@/lib/service-area";
 import { pickupSpot } from "@/lib/data";
 import { Pencil, Plus } from "lucide-react";
 
 export const PickupLocationStep = () => {
   const { state, dispatch } = useOrder();
 
-  // modal open state
   const [open, setOpen] = useState(false);
 
   const saved = state.data.savedAddress;
   const hasAddress = Boolean(saved && saved.line1);
+  const isServiceAreaAllowed = Boolean(saved?.isServiceAreaAllowed);
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({
-    pickupSpot: "",
-    hasAddress: "",
-  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleContinue = () => {
-    if (!state.data.pickupSpot || !hasAddress) {
-      setErrors({
-        pickupSpot: state.data.pickupSpot ? "" : "Pickup spot is required",
-        hasAddress: hasAddress ? "" : "Pickup address is required",
-      });
+    const newErrors: Record<string, string> = {};
+
+    if (!hasAddress) {
+      newErrors.hasAddress = "Pickup address is required";
+    } else if (!isServiceAreaAllowed) {
+      newErrors.hasAddress = SERVICE_AREA_ERROR;
+    }
+
+    if (!state.data.pickupSpot) {
+      newErrors.pickupSpot = "Pickup spot is required";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     dispatch({ type: "NEXT_STEP" });
-  };
-
-  const handleOpenForCreate = () => {
-    setOpen(true);
-  };
-
-  const handleOpenForEdit = () => {
-    setOpen(true);
   };
 
   return (
@@ -62,59 +61,59 @@ export const PickupLocationStep = () => {
       </div>
 
       <div className="space-y-4">
-        {/* Select an address (create/edit) */}
-        <div
-          className={`border border-input rounded-lg p-4 flex items-center justify-between hover:bg-primary hover:text-white cursor-pointer ${errors.hasAddress && "border-red-500"}`}
-          onClick={hasAddress ? handleOpenForEdit : handleOpenForCreate}
-        >
-          <div className="min-w-0">
-            <p className=" text-sm">
-              {hasAddress ? "Pickup address" : "Select an address"}
-            </p>
-            {hasAddress && (
-              <p className="truncate">{state.data.pickupAddress}</p>
+        {/* Address selector */}
+        <div>
+          <div
+            className={`border rounded-lg p-4 flex items-center justify-between hover:bg-primary hover:text-white cursor-pointer ${
+              errors.hasAddress ? "border-red-500" : "border-input"
+            }`}
+            onClick={() => setOpen(true)}
+          >
+            <div className="min-w-0">
+              <p className="text-sm">
+                {hasAddress ? "Pickup address" : "Select an address"}
+              </p>
+              {hasAddress && (
+                <p className="truncate">{state.data.pickupAddress}</p>
+              )}
+            </div>
+            {hasAddress ? (
+              <Pencil className="h-5 w-5 shrink-0" />
+            ) : (
+              <Plus className="h-5 w-5 shrink-0" />
             )}
           </div>
-          {hasAddress ? (
-            <Pencil className="h-5 w-5 " />
-          ) : (
-            <Plus className="h-5 w-5 " />
+          {errors.hasAddress && (
+            <p className="text-xs text-red-500 mt-1">{errors.hasAddress}</p>
           )}
         </div>
 
-        {/* Select Pickup Spot */}
-
-        <Select
-          value={state.data.pickupSpot || ""}
-          onValueChange={(v) =>
-            dispatch({ type: "UPDATE_DATA", field: "pickupSpot", value: v })
-          }
-        >
-          <SelectTrigger
-            className={`w-full py-3 ${errors.pickupSpot && "border-red-500"}`}
+        {/* Pickup spot */}
+        <div>
+          <Select
+            value={state.data.pickupSpot || ""}
+            onValueChange={(v) => {
+              dispatch({ type: "UPDATE_DATA", field: "pickupSpot", value: v });
+              setErrors((p) => ({ ...p, pickupSpot: "" }));
+            }}
           >
-            <SelectValue placeholder="Choose a spot" />
-          </SelectTrigger>
-          <SelectContent>
-            {pickupSpot.map((spot) => (
-              <SelectItem key={spot.value} value={spot.value}>
-                {spot.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/*  <div className="text-right">
-          {selectedSpeed === option.id ? (
-            <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-              <Check className="h-3 w-3 text-white" />
-            </div>
-          ) : (
-            <div className="w-5 h-5 bg-[#5C5C5C94] rounded-full flex items-center justify-center">
-              <Check className="h-3 w-3 text-white" />
-            </div>
+            <SelectTrigger
+              className={`w-full py-3 ${errors.pickupSpot ? "border-red-500" : ""}`}
+            >
+              <SelectValue placeholder="Choose a spot" />
+            </SelectTrigger>
+            <SelectContent>
+              {pickupSpot.map((spot) => (
+                <SelectItem key={spot.value} value={spot.value}>
+                  {spot.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.pickupSpot && (
+            <p className="text-xs text-red-500 mt-1">{errors.pickupSpot}</p>
           )}
-        </div> */}
+        </div>
       </div>
 
       {/* Bottom sticky actions */}
@@ -139,7 +138,6 @@ export const PickupLocationStep = () => {
         </div>
       </div>
 
-      {/* Address Dialog */}
       <AddressSelectDialog open={open} setOpen={setOpen} />
     </div>
   );

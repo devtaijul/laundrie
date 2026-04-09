@@ -9,6 +9,11 @@ export interface Address {
   city: string;
   state: string;
   zip: string;
+  // service-area validation metadata
+  isValidated?: boolean;
+  isServiceAreaAllowed?: boolean;
+  municipality?: string;
+  country?: string;
 }
 
 export interface OrderData {
