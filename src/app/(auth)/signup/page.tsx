@@ -254,7 +254,6 @@ export default function Signup() {
             name="phone"
             render={({ field }) => (
               <PhoneInput
-                defaultCountry="US"
                 placeholder="Enter your phone number"
                 className="h-12"
                 value={field.value}

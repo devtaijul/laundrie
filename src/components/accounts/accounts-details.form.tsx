@@ -100,7 +100,6 @@ export const AccountsDetailsForm: React.FC<{
                 name="phone"
                 render={({ field }) => (
                   <PhoneInput
-                    defaultCountry="US"
                     placeholder="Phone number"
                     value={field.value}
                     onChange={field.onChange}

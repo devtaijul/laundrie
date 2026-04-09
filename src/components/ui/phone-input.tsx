@@ -1,39 +1,25 @@
 "use client";
 
 import * as React from "react";
-import { CheckIcon, ChevronsUpDown } from "lucide-react";
 import * as RPNInput from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
 
-import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+
+// Netherlands is the only supported country for this application.
+const NL_COUNTRY: RPNInput.Country = "NL";
 
 type PhoneInputProps = Omit<
   React.ComponentProps<"input">,
   "onChange" | "value" | "ref"
 > &
-  Omit<RPNInput.Props<typeof RPNInput.default>, "onChange"> & {
+  Omit<RPNInput.Props<typeof RPNInput.default>, "onChange" | "country" | "defaultCountry"> & {
     onChange?: (value: RPNInput.Value) => void;
   };
 
 const PhoneInput: React.ForwardRefExoticComponent<
-  PhoneInputProps &
-    React.RefAttributes<React.ElementRef<typeof RPNInput.default>>
+  PhoneInputProps & React.RefAttributes<React.ElementRef<typeof RPNInput.default>>
 > = React.forwardRef<
   React.ElementRef<typeof RPNInput.default>,
   PhoneInputProps
@@ -42,8 +28,10 @@ const PhoneInput: React.ForwardRefExoticComponent<
     <RPNInput.default
       ref={ref}
       className={cn("flex", className)}
+      // Lock to Netherlands — country (not defaultCountry) makes it immutable
+      country={NL_COUNTRY}
       flagComponent={FlagComponent}
-      countrySelectComponent={CountrySelect}
+      countrySelectComponent={NlCountryDisplay}
       inputComponent={InputComponent}
       smartCaret={false}
       onChange={(value) => onChange?.(value || ("" as RPNInput.Value))}
@@ -52,6 +40,21 @@ const PhoneInput: React.ForwardRefExoticComponent<
   );
 });
 PhoneInput.displayName = "PhoneInput";
+
+// ── Static NL prefix display (replaces the country-select dropdown) ───────────
+
+const NlFlag = flags[NL_COUNTRY];
+
+const NlCountryDisplay = () => (
+  <div className="flex items-center gap-1.5 px-3 h-10 rounded-s-lg border border-r-0 border-input bg-muted shrink-0 select-none">
+    <span className="flex h-4 w-6 overflow-hidden rounded-sm bg-foreground/20 [&_svg]:size-full">
+      {NlFlag && <NlFlag title="Netherlands" />}
+    </span>
+    <span className="text-sm text-foreground">+31</span>
+  </div>
+);
+
+// ── Number input ──────────────────────────────────────────────────────────────
 
 const InputComponent = React.forwardRef<
   HTMLInputElement,
@@ -65,91 +68,10 @@ const InputComponent = React.forwardRef<
 ));
 InputComponent.displayName = "InputComponent";
 
-type CountryEntry = { label: string; value: RPNInput.Country | undefined };
-
-type CountrySelectProps = {
-  disabled?: boolean;
-  value: RPNInput.Country;
-  options: CountryEntry[];
-  onChange: (country: RPNInput.Country) => void;
-};
-
-const CountrySelect = ({
-  disabled,
-  value,
-  options,
-  onChange,
-}: CountrySelectProps) => {
-  const handleSelect = React.useCallback(
-    (country: RPNInput.Country) => {
-      onChange(country);
-    },
-    [onChange],
-  );
-
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          className="flex gap-1 rounded-e-none hover:bg-primary rounded-s-lg border-r-0 px-3 focus:z-10 h-10"
-          disabled={disabled}
-        >
-          <FlagComponent country={value} countryName={value} />
-          <ChevronsUpDown
-            className={cn(
-              "-mr-2 size-4 opacity-50",
-              disabled ? "hidden" : "opacity-100",
-            )}
-          />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
-        <Command>
-          <CommandInput placeholder="Search country..." />
-          <CommandList>
-            <CommandEmpty>No country found.</CommandEmpty>
-            <CommandGroup>
-              <ScrollArea className="h-72">
-                {options
-                  .filter((x) => x.value)
-                  .map((option) => (
-                    <CommandItem
-                      className="gap-2"
-                      key={option.value}
-                      onSelect={() => handleSelect(option.value!)}
-                    >
-                      <FlagComponent
-                        country={option.value!}
-                        countryName={option.label}
-                      />
-                      <span className="flex-1 text-sm">{option.label}</span>
-                      {option.value && (
-                        <span className="text-foreground/50 text-sm">
-                          {`+${RPNInput.getCountryCallingCode(option.value)}`}
-                        </span>
-                      )}
-                      <CheckIcon
-                        className={cn(
-                          "ml-auto size-4",
-                          option.value === value ? "opacity-100" : "opacity-0",
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-              </ScrollArea>
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-};
+// ── FlagComponent is still needed by RPNInput internally ─────────────────────
 
 const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
   const Flag = flags[country];
-
   return (
     <span className="flex h-4 w-6 overflow-hidden rounded-sm bg-foreground/20 [&_svg]:size-full">
       {Flag && <Flag title={countryName} />}
