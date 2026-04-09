@@ -1,15 +1,12 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PAGES } from "@/config/pages.config";
-
-import {
-  Calendar,
-  Package,
-  Sparkles,
-  Truck,
-} from "lucide-react";
+import { Calendar, Package, Sparkles, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
 
 const services = [
   {
@@ -60,6 +57,25 @@ const processSteps = [
 ];
 
 export const ServicesSection = () => {
+  const [activeService, setActiveService] = React.useState(0);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const cardWidth = (el.children[0] as HTMLElement)?.offsetWidth ?? 0;
+    const gap = 16;
+    setActiveService(Math.round(el.scrollLeft / (cardWidth + gap)));
+  };
+
+  const scrollTo = (index: number) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const cardWidth = (el.children[0] as HTMLElement)?.offsetWidth ?? 0;
+    const gap = 16;
+    el.scrollTo({ left: index * (cardWidth + gap), behavior: "smooth" });
+  };
+
   return (
     <section className="py-12 sm:py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -105,14 +121,66 @@ export const ServicesSection = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 items-start gap-4 sm:gap-6">
+          {/* Mobile: peek carousel */}
+          <div className="sm:hidden -mx-4">
+            <div
+              ref={scrollRef}
+              onScroll={handleScroll}
+              className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 pb-2"
+              style={
+                {
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                } as React.CSSProperties
+              }
+            >
+              {services.map((service, index) => (
+                <div key={index} className="snap-start shrink-0 w-[82%] mt-2">
+                  <Card className="bg-white border-0 shadow-[0px_0px_6px_0px_rgba(0,_0,_0,_0.1)] h-full">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="w-16 h-16">
+                        <Image
+                          src={service.iconSrc}
+                          alt={service.title}
+                          width={65}
+                          height={65}
+                          className="object-contain"
+                        />
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        {service.title}
+                      </h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {service.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center gap-2 mt-4">
+              {services.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => scrollTo(i)}
+                  className={`rounded-full transition-all duration-200 ${
+                    i === activeService
+                      ? "w-8 h-3 bg-primary"
+                      : "w-3 h-3 bg-[#c4c4c4]"
+                  }`}
+                  aria-label={`Go to service ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop: staggered grid */}
+          <div className="hidden sm:grid grid-cols-2 md:grid-cols-3 items-start gap-4 sm:gap-6">
             {services.map((service, index) => (
               <Card
                 key={index}
                 className="bg-white border-0 shadow-[0px_0px_50px_0px_rgba(0,0,0,0.1)] hover:shadow-[0px_0px_50px_13px_rgba(0,0,0,0.1)] transition-shadow"
-                style={{
-                  marginTop: `${index * 20}px`,
-                }}
+                style={{ marginTop: `${index * 20}px` }}
               >
                 <CardContent className="p-6 sm:p-8 space-y-4">
                   <div className="w-16 h-16">

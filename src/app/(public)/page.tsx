@@ -1,7 +1,6 @@
 import { FAQSection } from "@/components/home/faq-section";
 import { GallerySection } from "@/components/home/GallerySection";
 import { HeroSection } from "@/components/home/hero-section";
-import { PricingSection } from "@/components/home/pricing-section";
 import { PromoSection } from "@/components/home/PromoSection";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
@@ -14,7 +13,7 @@ const Home = () => {
       <TestimonialsSection />
       <ValuePropositionSection />
       <ServicesSection />
-      <PricingSection />
+      {/*   <PricingSection /> */}
       <PromoSection />
       <FAQSection />
       <GallerySection />
