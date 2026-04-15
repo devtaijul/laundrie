@@ -10,6 +10,7 @@ import {
   Truck,
 } from "lucide-react";
 import { OrderDetailsAction } from "./OrderDetailsAction";
+import { OrderReviewSection } from "./OrderReviewSection";
 import { getOrderByOrderId } from "@/actions/order.actions";
 import { Suspense } from "react";
 import OrderDetailsSkeleton from "../skeletons/OrderDetailsSkeleton";
@@ -241,6 +242,12 @@ export const OrderDetailsServer = async ({ orderId }: { orderId: string }) => {
             </div>
           </div>
         </div>
+
+        {/* Review section — only for delivered orders */}
+        <OrderReviewSection
+          orderId={order!.id}
+          orderStatus={order!.status}
+        />
 
         {/* Action Buttons */}
         <OrderDetailsAction order={order as OrderExtends} />

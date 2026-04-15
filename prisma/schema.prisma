@@ -111,6 +111,7 @@ model User {
   // NextAuth relations
   accounts Account[]
   sessions Session[]
+  reviews  Review[]  @relation("UserReviews")
   // Orders as customer
   orders   Order[]   @relation("UserOrders")
 
@@ -168,8 +169,26 @@ model Order {
   // Rider
   riderId            String?
   rider              User?          @relation("RiderOrders", fields: [riderId], references: [id])
+  review             Review?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation("UserReviews", fields: [userId], references: [id])
+  rating      Int      // 1–5
+  comment     String   @db.Text
+  adminReply  String?  @db.Text
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([rating])
 }
 
 // === NextAuth required models ===
