@@ -11,12 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import {
-  Eye,
-  MoreHorizontal,
-  Copy,
-  WashingMachine,
-} from "lucide-react";
+import { Eye, MoreHorizontal, Copy, WashingMachine } from "lucide-react";
 import { formatDate, formatMoney } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -24,27 +19,27 @@ import { cn } from "@/lib/utils";
 import { OrderStatus } from "@/generated/prisma";
 
 const STATUS_STYLE: Record<OrderStatus, string> = {
-  PENDING:            "bg-yellow-100 text-yellow-700",
-  PROCESSING:         "bg-blue-100 text-blue-700",
-  PICKUP_SCHEDULED:   "bg-cyan-100 text-cyan-700",
-  PICKED_UP:          "bg-indigo-100 text-indigo-700",
-  WASHING:            "bg-sky-100 text-sky-700",
+  PENDING: "bg-yellow-100 text-yellow-700",
+  PROCESSING: "bg-blue-100 text-blue-700",
+  PICKUP_SCHEDULED: "bg-cyan-100 text-cyan-700",
+  PICKED_UP: "bg-indigo-100 text-indigo-700",
+  WASHING: "bg-sky-100 text-sky-700",
   DELIVERY_SCHEDULED: "bg-orange-100 text-orange-700",
-  DELIVERED:          "bg-green-100 text-green-700",
-  CANCELED:           "bg-red-100 text-red-700",
-  FAILED:             "bg-red-100 text-red-700",
+  DELIVERED: "bg-green-100 text-green-700",
+  CANCELED: "bg-red-100 text-red-700",
+  FAILED: "bg-red-100 text-red-700",
 };
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
-  PENDING:            "Pending",
-  PROCESSING:         "Confirmed",
-  PICKUP_SCHEDULED:   "Pickup Scheduled",
-  PICKED_UP:          "Picked Up",
-  WASHING:            "Washing",
+  PENDING: "Pending",
+  PROCESSING: "Confirmed",
+  PICKUP_SCHEDULED: "Pickup Scheduled",
+  PICKED_UP: "Picked Up",
+  WASHING: "Washing",
   DELIVERY_SCHEDULED: "Out for Delivery",
-  DELIVERED:          "Delivered",
-  CANCELED:           "Cancelled",
-  FAILED:             "Failed",
+  DELIVERED: "Delivered",
+  CANCELED: "Cancelled",
+  FAILED: "Failed",
 };
 
 const PAYMENT_STYLE: Record<string, string> = {
@@ -65,8 +60,8 @@ export const OrderRow = ({ order }: { order: OrderExtends }) => {
 
   const paymentStatus = order.payments?.[0]?.status ?? null;
   const customerName =
-    order.user?.name ??
-    `${order.user?.firstName ?? ""} ${order.user?.lastName ?? ""}`.trim() ||
+    (order.user?.name ??
+      `${order.user?.firstName ?? ""} ${order.user?.lastName ?? ""}`.trim()) ||
     "Unknown";
   const initials = customerName
     .split(" ")
@@ -191,8 +186,8 @@ export const OrderCard = ({ order }: { order: OrderExtends }) => {
 
   const paymentStatus = order.payments?.[0]?.status ?? null;
   const customerName =
-    order.user?.name ??
-    `${order.user?.firstName ?? ""} ${order.user?.lastName ?? ""}`.trim() ||
+    (order.user?.name ??
+      `${order.user?.firstName ?? ""} ${order.user?.lastName ?? ""}`.trim()) ||
     "Unknown";
   const initials = customerName
     .split(" ")

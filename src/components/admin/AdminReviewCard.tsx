@@ -67,8 +67,8 @@ export const AdminReviewCard = ({
   const [loading, setLoading] = useState<string | null>(null);
 
   const customerName =
-    review.user.name ??
-    `${review.user.firstName ?? ""} ${review.user.lastName ?? ""}`.trim() ||
+    (review.user.name ??
+      `${review.user.firstName ?? ""} ${review.user.lastName ?? ""}`.trim()) ||
     "Anonymous";
 
   const initials = customerName
@@ -185,7 +185,9 @@ export const AdminReviewCard = ({
       {/* Rating + comment */}
       <div className="space-y-2">
         <StarRow rating={review.rating} />
-        <p className="text-sm text-foreground leading-relaxed">{review.comment}</p>
+        <p className="text-sm text-foreground leading-relaxed">
+          {review.comment}
+        </p>
       </div>
 
       {/* Existing reply */}
