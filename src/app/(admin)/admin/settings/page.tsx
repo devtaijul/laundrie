@@ -1,20 +1,5 @@
-import {
-  getAdminNotificationSetting,
-  getBusinessSetting,
-  getCustomerNotificationSetting,
-  getPaymentSetting,
-  getSmsConfigurationSetting,
-} from "@/actions/setting.actions";
 import AdminSettings from "@/components/admin/AdminSettings";
-import React from "react";
 
-const page = () => {
-  getBusinessSetting();
-  getPaymentSetting();
-  getAdminNotificationSetting();
-  getSmsConfigurationSetting();
-  getCustomerNotificationSetting();
+export default function SettingsPage() {
   return <AdminSettings />;
-};
-
-export default page;
+}

@@ -1,11 +1,17 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { hashToken } from "@/lib/helper/auth";
 import { actionError, actionResponse } from "@/lib/server/utils";
 import {
   AdminNotificationFormData,
+  AdminProfileFormData,
   BusinessFormData,
+  ChangePasswordFormData,
+  EmailConfigurationFormData,
   PaymentSettingFormData,
+  SecurityFormData,
   SMSConfigurationFormData,
 } from "@/lib/zodSchema";
 
@@ -190,5 +196,156 @@ export const updateCustomerNotificationSetting = async (
   } catch (error) {
     console.log(error);
     return actionError("Failed to update settings");
+  }
+};
+
+// ─── Security ────────────────────────────────────────────────────────────────
+
+export const getSecuritySetting = async () => {
+  try {
+    const security = await prisma.security.findFirst();
+    if (!security) return actionError("Settings not found");
+    return actionResponse(security);
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to get security settings");
+  }
+};
+
+export const updateSecuritySetting = async (
+  data: SecurityFormData,
+  id: string
+) => {
+  try {
+    const { ip_whitelist, ...rest } = data;
+    const ipList = ip_whitelist
+      ? ip_whitelist
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+    const security = await prisma.security.update({
+      where: { id },
+      data: { ...rest, ip_whitelist: ipList },
+    });
+    return actionResponse(security);
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to update security settings");
+  }
+};
+
+// ─── Email Configuration ─────────────────────────────────────────────────────
+
+export const getEmailConfigurationSetting = async () => {
+  try {
+    const emailConfig = await prisma.emailConfiguration.findFirst();
+    if (!emailConfig) return actionError("Settings not found");
+    return actionResponse(emailConfig);
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to get email configuration");
+  }
+};
+
+export const updateEmailConfigurationSetting = async (
+  data: EmailConfigurationFormData,
+  id: string
+) => {
+  try {
+    const emailConfig = await prisma.emailConfiguration.update({
+      where: { id },
+      data,
+    });
+    return actionResponse(emailConfig);
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to update email configuration");
+  }
+};
+
+// ─── Admin Profile ────────────────────────────────────────────────────────────
+
+export const getAdminProfile = async () => {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return actionError("Unauthorized");
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        name: true,
+      },
+    });
+    if (!user) return actionError("User not found");
+    return actionResponse(user);
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to get admin profile");
+  }
+};
+
+export const updateAdminProfile = async (data: AdminProfileFormData) => {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return actionError("Unauthorized");
+
+    const { firstName, lastName, email, phone } = data;
+
+    // check email uniqueness (excluding self)
+    const existing = await prisma.user.findFirst({
+      where: { email: email.toLowerCase(), NOT: { id: session.user.id } },
+      select: { id: true },
+    });
+    if (existing) return actionError("Email already in use");
+
+    const user = await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        firstName,
+        lastName,
+        name: `${firstName} ${lastName}`.trim(),
+        email: email.toLowerCase(),
+        phone,
+      },
+    });
+    return actionResponse(user);
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to update profile");
+  }
+};
+
+export const changeAdminPassword = async (data: ChangePasswordFormData) => {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return actionError("Unauthorized");
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { passwordHash: true },
+    });
+    if (!user) return actionError("User not found");
+
+    const currentHash = hashToken(data.currentPassword);
+    if (currentHash !== user.passwordHash) {
+      return actionError("Current password is incorrect");
+    }
+
+    const newHash = hashToken(data.newPassword);
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { passwordHash: newHash },
+    });
+    return actionResponse({ ok: true });
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to change password");
   }
 };

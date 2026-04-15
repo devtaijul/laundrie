@@ -16,6 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTransition } from "react";
+import { logoutAction } from "@/actions/auth.actions";
 import {
   Sidebar,
   SidebarContent,
@@ -43,6 +45,13 @@ export function AdminSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+
+  const handleLogout = () => {
+    startTransition(() => {
+      logoutAction();
+    });
+  };
 
   return (
     <div
@@ -99,10 +108,14 @@ export function AdminSidebar() {
         <div className="mt-auto p-4 border-t border-border">
           <Button
             variant="ghost"
+            disabled={isPending}
+            onClick={handleLogout}
             className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
           >
-            <LogOut className="h-5 w-5 mr-3" />
-            {!isCollapsed && <span>Logout</span>}
+            <LogOut className="h-5 w-5 mr-3 shrink-0" />
+            {!isCollapsed && (
+              <span>{isPending ? "Logging out…" : "Logout"}</span>
+            )}
           </Button>
         </div>
       </Sidebar>

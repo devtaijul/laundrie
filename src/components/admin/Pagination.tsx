@@ -7,7 +7,7 @@ type PaginationProps = {
   currentPage: number;
   totalPages: number;
   basePath?: string; // default route, e.g. /admin/orders
-  status?: OrderStatus | "ALL";
+  status?: OrderStatus | "ALL" | string;
   search?: string;
 };
 

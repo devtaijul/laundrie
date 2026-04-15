@@ -82,3 +82,59 @@ export async function validateReferralCode(code: string) {
   }
   return actionResponse(referralInfo);
 }
+
+export async function getUserReferralStats() {
+  try {
+    const user = await getCurrentUser();
+    if (!user?.data) return actionError("Unauthorized");
+
+    const { id } = user.data;
+
+    const [referrals, fullUser] = await Promise.all([
+      prisma.referral.findMany({
+        where: { referrerId: id },
+        include: {
+          referree: {
+            select: { name: true, createdAt: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.user.findUnique({
+        where: { id },
+        select: {
+          referralCreditCents: true,
+          tenDollarCode: true,
+          twentyDollarCode: true,
+          referreeReferral: {
+            select: { code: true, referreeCreditCents: true, createdAt: true },
+          },
+        },
+      }),
+    ]);
+
+    return actionResponse({
+      creditCents: fullUser?.referralCreditCents ?? 0,
+      tenDollarCode: fullUser?.tenDollarCode,
+      twentyDollarCode: fullUser?.twentyDollarCode,
+      referrals: referrals.map((r) => ({
+        id: r.id,
+        refereeName: r.referree.name,
+        refereeJoinedAt: r.referree.createdAt,
+        referreeCreditCents: r.referreeCreditCents,
+        referrerCreditCents: r.referrerCreditCents,
+        createdAt: r.createdAt,
+      })),
+      signedUpVia: fullUser?.referreeReferral
+        ? {
+            code: fullUser.referreeReferral.code,
+            creditCents: fullUser.referreeReferral.referreeCreditCents,
+            at: fullUser.referreeReferral.createdAt,
+          }
+        : null,
+    });
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to get referral stats");
+  }
+}

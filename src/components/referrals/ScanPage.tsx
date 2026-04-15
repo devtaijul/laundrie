@@ -53,8 +53,8 @@ export const ScanPage = async ({ code }: { code: string }) => {
                   <div className="font-semibold">Reward</div>
                   <div className="text-muted-foreground">
                     {res.data?.amount === 10
-                      ? "Give $10/Get $10"
-                      : "Give $20/Get $0"}
+                      ? "You get $10 / They get $10"
+                      : "You get $0 / They get $20"}
                   </div>
                 </div>
               </div>
@@ -71,7 +71,7 @@ export const ScanPage = async ({ code }: { code: string }) => {
             </div>
 
             {/* Send Button */}
-            <CopyReferLink />
+            <CopyReferLink referalCode={code} amount={res.data?.amount ?? 10} />
           </div>
         </Card>
       </div>

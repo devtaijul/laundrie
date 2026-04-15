@@ -1,274 +1,185 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getCustomers } from "@/actions/customer.actions";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar, Filter, MoreVertical, Search, Upload } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Pagination } from "@/components/admin/Pagination";
+import { CustomerBanButton } from "@/components/admin/CustomerBanButton";
+import { CustomerFilters } from "@/components/admin/CustomerFilters";
+import { PAGES } from "@/config/pages.config";
+import { formatMoney } from "@/lib/utils";
+import { format } from "date-fns";
+import { Users } from "lucide-react";
+import Link from "next/link";
 
-const customers = [
-  {
-    id: "CUS-005678",
-    name: "Duncan England",
-    phone: "+15679012345",
-    date: "August 24, 2024",
-    status: "Active",
-    orders: 29,
-    spent: "$1,250.75",
-  },
-  {
-    id: "CUS-008912",
-    name: "Deborah Joyner",
-    phone: "+17890123456",
-    date: "August 24, 2024",
-    status: "Active",
-    orders: 31,
-    spent: "$2,312.95",
-  },
-  {
-    id: "CUS-010345",
-    name: "Kendrick Burch",
-    phone: "+15678901234",
-    date: "August 24, 2024",
-    status: "Inactive",
-    orders: 21,
-    spent: "$1,009.25",
-  },
-  {
-    id: "CUS-015234",
-    name: "Deegan Crane",
-    phone: "+16780123456",
-    date: "August 24, 2024",
-    status: "Active",
-    orders: 12,
-    spent: "$982.85",
-  },
-  {
-    id: "CUS-019456",
-    name: "Karlie Craft",
-    phone: "+14568901234",
-    date: "August 24, 2024",
-    status: "Active",
-    orders: 45,
-    spent: "$5,837.95",
-  },
-  {
-    id: "CUS-013789",
-    name: "Mina Knowles",
-    phone: "+10124567890",
-    date: "August 23, 2024",
-    status: "Active",
-    orders: 24,
-    spent: "$1,143.75",
-  },
-  {
-    id: "CUS-014901",
-    name: "Boston Brennan",
-    phone: "+14567890123",
-    date: "August 23, 2024",
-    status: "Active",
-    orders: 43,
-    spent: "$5,342.65",
-  },
-  {
-    id: "CUS-017890",
-    name: "Kobe Lane",
-    phone: "+11234567890",
-    date: "August 23, 2024",
-    status: "Inactive",
-    orders: 35,
-    spent: "$3,465.65",
-  },
-  {
-    id: "CUS-002567",
-    name: "London Thornton",
-    phone: "+13456789012",
-    date: "August 23, 2024",
-    status: "Active",
-    orders: 22,
-    spent: "$1,102.35",
-  },
-  {
-    id: "CUS-019123",
-    name: "Ximena Dodson",
-    phone: "+12345679901",
-    date: "August 23, 2024",
-    status: "Active",
-    orders: 11,
-    spent: "$876.95",
-  },
-];
+const PAGE_SIZE = 10;
 
-const AdminCustomers = () => {
+const AdminCustomers = async ({
+  search = "",
+  status = "all",
+  page = 1,
+}: {
+  search?: string;
+  status?: "all" | "active" | "banned";
+  page?: number;
+}) => {
+  const res = await getCustomers({ search, status, page, pageSize: PAGE_SIZE });
+
+  const isEmpty = !res.success || !res.data || res.data.customers.length === 0;
+  const customers = res.success && res.data ? res.data.customers : [];
+  const totalPages = res.success && res.data ? res.data.totalPages : 1;
+  const totalCount = res.success && res.data ? res.data.totalCount : 0;
+
   return (
-    <>
-      <div className="p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Customers</h1>
-            <p className="text-sm text-muted-foreground">
-              Monitor and manage all customer orders in one place.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              October 2025
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Upload className="h-4 w-4" />
-              Export
-            </Button>
-          </div>
+    <div className="p-4 sm:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Customers</h1>
+          <p className="text-sm text-muted-foreground">
+            {totalCount} customer{totalCount !== 1 ? "s" : ""} total
+          </p>
         </div>
+      </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search customer"
-              className="pl-9"
-            />
-          </div>
+      {/* Filters */}
+      <CustomerFilters currentSearch={search} currentStatus={status} />
 
-          <div className="flex gap-2">
-            <Select defaultValue="all">
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="border border-border rounded-lg bg-card overflow-hidden">
+      {/* Table */}
+      {isEmpty ? (
+        <Card className="p-12 flex flex-col items-center gap-3 text-center">
+          <Users className="h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm font-medium text-muted-foreground">
+            No customers found
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Try adjusting your search or filter.
+          </p>
+        </Card>
+      ) : (
+        <div className="border border-border rounded-xl bg-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50">
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4">
-                    <Checkbox />
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/40">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Customer
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    ID
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden md:table-cell">
+                    Phone
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Customer Name
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden lg:table-cell">
+                    Joined
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Phone Number
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Registration Date
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Status
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Total Orders
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden sm:table-cell">
+                    Orders
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Total Spend
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden sm:table-cell">
+                    Total Spent
                   </th>
-                  <th className="text-left py-3 px-4"></th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Actions
+                  </th>
                 </tr>
               </thead>
-              <tbody className="bg-background">
-                {customers.map((customer, index) => (
-                  <tr
-                    key={customer.id}
-                    className={`border-b border-border hover:bg-muted/50 ${index === 1 ? "bg-blue-50/50" : ""}`}
-                  >
-                    <td className="py-3 px-4">
-                      <Checkbox checked={index === 1} />
-                    </td>
-                    <td className="py-3 px-4 text-sm font-medium">
-                      {customer.id}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${customer.name}`}
+              <tbody className="divide-y divide-border">
+                {customers.map((c) => {
+                  const isBanned = !!c.bannedAt;
+                  const initials = (c.name || "?")
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+
+                  return (
+                    <tr
+                      key={c.id}
+                      className="hover:bg-muted/30 transition-colors"
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8 shrink-0">
+                            <AvatarFallback className="text-xs">
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <Link
+                              href={PAGES.ADMIN.CUSTOMER_DETAIL(c.id)}
+                              className="font-medium hover:text-primary truncate block"
+                            >
+                              {c.name}
+                            </Link>
+                            <span className="text-xs text-muted-foreground truncate block">
+                              {c.email}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-4 text-muted-foreground hidden md:table-cell">
+                        {c.phone ?? "—"}
+                      </td>
+
+                      <td className="py-3 px-4 text-muted-foreground hidden lg:table-cell whitespace-nowrap">
+                        {format(new Date(c.createdAt), "MMM d, yyyy")}
+                      </td>
+
+                      <td className="py-3 px-4">
+                        {isBanned ? (
+                          <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0">
+                            Banned
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0">
+                            Active
+                          </Badge>
+                        )}
+                      </td>
+
+                      <td className="py-3 px-4 hidden sm:table-cell">
+                        {c.totalOrders}
+                      </td>
+
+                      <td className="py-3 px-4 font-medium hidden sm:table-cell">
+                        {formatMoney(c.totalSpentCents / 100)}
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={PAGES.ADMIN.CUSTOMER_DETAIL(c.id)}
+                            className="text-xs text-primary hover:underline font-medium"
+                          >
+                            View
+                          </Link>
+                          <CustomerBanButton
+                            customerId={c.id}
+                            isBanned={isBanned}
+                            variant="outline"
                           />
-                          <AvatarFallback>{customer.name[0]}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm">{customer.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-sm">{customer.phone}</td>
-                    <td className="py-3 px-4 text-sm">{customer.date}</td>
-                    <td className="py-3 px-4">
-                      <Badge
-                        variant="secondary"
-                        className={
-                          customer.status === "Active"
-                            ? "bg-green-100 text-green-700 hover:bg-green-100"
-                            : "bg-red-100 text-red-700 hover:bg-red-100"
-                        }
-                      >
-                        {customer.status}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-sm">{customer.orders}</td>
-                    <td className="py-3 px-4 text-sm font-medium">
-                      {customer.spent}
-                    </td>
-                    <td className="py-3 px-4">
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
-          <div className="flex items-center justify-center gap-2 py-4 border-t border-border">
-            <Button variant="outline" size="icon">
-              «
-            </Button>
-            <Button variant="outline" size="icon">
-              ‹
-            </Button>
-            <Button variant="default" size="icon" className="bg-primary">
-              1
-            </Button>
-            <Button variant="outline" size="icon">
-              2
-            </Button>
-            <Button variant="outline" size="icon">
-              3
-            </Button>
-            <span className="px-2">...</span>
-            <Button variant="outline" size="icon">
-              10
-            </Button>
-            <Button variant="outline" size="icon">
-              ›
-            </Button>
-            <Button variant="outline" size="icon">
-              »
-            </Button>
-          </div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            basePath="/admin/customers"
+            search={search}
+            status={status !== "all" ? status : undefined}
+          />
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 };
 

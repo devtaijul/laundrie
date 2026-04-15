@@ -30,6 +30,7 @@ export const signupSchema = z.object({
   }),
   marketing: z.boolean(),
   notifications: z.boolean(),
+  referralCode: z.string().optional(),
 });
 
 export type SignupData = z.infer<typeof signupSchema>;
@@ -170,3 +171,56 @@ export const customerNotificationSchema = z.object({
 export type CustomerNotificationFormData = z.infer<
   typeof customerNotificationSchema
 >;
+
+// schemas/security.schema.ts
+export const securitySchema = z.object({
+  two_factor_auth: z.boolean(),
+  session_timeout: z.number().int().min(60, "Minimum 60 seconds").max(86400, "Maximum 24 hours"),
+  max_login_attempts: z.number().int().min(1, "Minimum 1").max(20, "Maximum 20"),
+  enable_ip_whitelist: z.boolean(),
+  ip_whitelist: z.string(), // comma-separated IPs; parsed server-side
+});
+
+export type SecurityFormData = z.infer<typeof securitySchema>;
+
+// schemas/email-configuration.schema.ts
+export const emailConfigurationSchema = z.object({
+  host: z.string().min(1, "SMTP host is required"),
+  port: z.number().int().min(1, "Port is required").max(65535),
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+  from: z.string().email("Enter a valid from-address"),
+  name: z.string().min(1, "Sender name is required"),
+});
+
+export type EmailConfigurationFormData = z.infer<typeof emailConfigurationSchema>;
+
+// schemas/admin-profile.schema.ts
+export const adminProfileSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Enter a valid email"),
+  phone: z.string().min(1, "Phone is required"),
+});
+
+export type AdminProfileFormData = z.infer<typeof adminProfileSchema>;
+
+// schemas/change-password.schema.ts
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z
+      .string()
+      .min(8, "Must be at least 8 characters")
+      .regex(/\d/, "Must contain a number")
+      .regex(/[a-z]/, "Must contain a lowercase letter")
+      .regex(/[A-Z]/, "Must contain an uppercase letter")
+      .regex(/[!@#$%^&*(),.?":{}|<>]/, "Must contain a special character"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;

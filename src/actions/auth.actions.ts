@@ -178,6 +178,7 @@ export async function registerUserAction({
   phone,
   useType,
   isOver65,
+  referralCode,
 }: SignupData) {
   try {
     const lower = email.toLowerCase();
@@ -196,8 +197,6 @@ export async function registerUserAction({
       return actionError("Email already in use");
     }
 
-    // 1.1) uniqueness
-
     const existingUserPhone = await prisma.user.findFirst({
       where: { phone: normalizedPhone },
       select: { id: true },
@@ -206,40 +205,84 @@ export async function registerUserAction({
       return actionError("Phone already in use");
     }
 
-    // 2) hash
+    // 2) validate referral code if provided
+    let referralInfo: { referrerId: string; referreeCreditCents: number; referrerCreditCents: number } | null = null;
+    if (referralCode) {
+      const referrer = await prisma.user.findFirst({
+        where: {
+          OR: [{ tenDollarCode: referralCode }, { twentyDollarCode: referralCode }],
+        },
+        select: { id: true, tenDollarCode: true },
+      });
+      if (referrer) {
+        const isTenDollar = referrer.tenDollarCode === referralCode;
+        referralInfo = {
+          referrerId: referrer.id,
+          referreeCreditCents: isTenDollar ? 1000 : 2000, // $10 or $20 for new user
+          referrerCreditCents: isTenDollar ? 1000 : 0,    // $10 for referrer on 10-code, $0 on 20-code
+        };
+      }
+    }
+
+    // 3) hash
     const passwordHash = hashToken(password);
 
-    // 3) referral codes generate
+    // 4) referral codes generate
     const tenDollarCode = await generateUniqueReferralCode("10");
     const twentyDollarCode = await generateUniqueReferralCode("20");
 
-    // 4) create
-    const user = await prisma.user.create({
-      data: {
-        firstName,
-        lastName,
-        name: `${firstName} ${lastName}`,
-        email: lower,
-        passwordHash,
-        phone: normalizedPhone,
-        marketing,
-        notifications,
-        useType,
-        isOver65: isOver65 === "yes" ? true : false,
-        tenDollarCode,
-        twentyDollarCode,
-      },
+    // 5) create user + referral record + credit awards in a transaction
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          firstName,
+          lastName,
+          name: `${firstName} ${lastName}`,
+          email: lower,
+          passwordHash,
+          phone: normalizedPhone,
+          marketing,
+          notifications,
+          useType,
+          isOver65: isOver65 === "yes" ? true : false,
+          tenDollarCode,
+          twentyDollarCode,
+          referralCreditCents: referralInfo?.referreeCreditCents ?? 0,
+        },
+      });
+
+      if (referralInfo) {
+        // Record the referral
+        await tx.referral.create({
+          data: {
+            referrerId: referralInfo.referrerId,
+            referreeId: newUser.id,
+            code: referralCode!,
+            referreeCreditCents: referralInfo.referreeCreditCents,
+            referrerCreditCents: referralInfo.referrerCreditCents,
+          },
+        });
+
+        // Award credit to referrer if applicable
+        if (referralInfo.referrerCreditCents > 0) {
+          await tx.user.update({
+            where: { id: referralInfo.referrerId },
+            data: { referralCreditCents: { increment: referralInfo.referrerCreditCents } },
+          });
+        }
+      }
+
+      return newUser;
     });
 
-    // 5) make Sign in
-
+    // 6) sign in
     await signIn("credentials", {
       identifier: email,
       password,
       redirect: false,
     });
 
-    // 6) success
+    // 7) success
     return actionResponse(user);
   } catch (error) {
     console.log("errors", error);

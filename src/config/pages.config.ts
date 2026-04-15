@@ -25,6 +25,8 @@ export const PAGES = {
     ROOT: "/admin",
     ORDERS: "/admin/orders",
     ORDER_VIEW: (orderId: string) => `/admin/orders/${orderId}`,
+    CUSTOMERS: "/admin/customers",
+    CUSTOMER_DETAIL: (id: string) => `/admin/customers/${id}`,
   },
   DRIVER: {
     ROOT: "/driver",
