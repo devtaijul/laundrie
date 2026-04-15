@@ -15,8 +15,57 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Laundrie",
-  description: "Laundrie - Laundry Service",
+  metadataBase: new URL("https://laundrie.nl"),
+  title: {
+    default: "Laundrie — Professional Laundry & Dry Cleaning",
+    template: "%s | Laundrie",
+  },
+  description:
+    "Laundrie offers professional laundry and dry cleaning services with free pickup and delivery, 7 days a week. Fresh, clean clothes delivered to your door.",
+  keywords: [
+    "laundry service",
+    "dry cleaning",
+    "pickup delivery laundry",
+    "laundrie",
+    "professional laundry",
+  ],
+  authors: [{ name: "Laundrie" }],
+  creator: "Laundrie",
+  openGraph: {
+    type: "website",
+    locale: "nl_NL",
+    url: "https://laundrie.nl",
+    siteName: "Laundrie",
+    title: "Laundrie — Professional Laundry & Dry Cleaning",
+    description:
+      "Free pickup and delivery, 7 days a week. Fresh, clean clothes delivered to your door.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Laundrie — Professional Laundry Service",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Laundrie — Professional Laundry & Dry Cleaning",
+    description:
+      "Free pickup and delivery, 7 days a week. Fresh, clean clothes delivered to your door.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({

@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { me } from "@/actions/user.actions";
+
+export const metadata: Metadata = {
+  title: "My Profile",
+  description: "View and update your Laundrie profile information.",
+};
 import { TopNavigation } from "@/components/layout/TopNavigation";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { ProfileForm } from "@/components/accounts/profile-form";

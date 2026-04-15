@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { getMyReviews } from "@/actions/review.actions";
+
+export const metadata: Metadata = {
+  title: "My Reviews",
+  description: "View reviews you've left for your Laundrie orders.",
+};
 import { TopNavigation } from "@/components/layout/TopNavigation";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { Card, CardContent } from "@/components/ui/card";

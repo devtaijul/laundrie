@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { verifyEmailService } from "@/actions/auth.actions";
+
+export const metadata: Metadata = {
+  title: "Verify Email",
+  description: "Verify your Laundrie email address.",
+  robots: { index: false, follow: false },
+};
 import { InvalidTokenUid } from "@/components/auth/InvalidTokenUid";
 import VerifyEmailPage from "@/components/auth/VerifyEmailPage";
 import { FullScreenLoader } from "@/components/layout/FullScreenLoader";

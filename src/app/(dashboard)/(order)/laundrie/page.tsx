@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { getActiveOrders } from "@/actions/order.actions";
+
+export const metadata: Metadata = {
+  title: "Home",
+  description: "Manage your laundry with Laundrie.",
+};
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { LaundrieServer } from "@/components/order/LaundrieServer";
 

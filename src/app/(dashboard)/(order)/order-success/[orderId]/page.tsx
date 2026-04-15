@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { CheckCircle } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Order Confirmed",
+  description: "Your Laundrie order has been placed successfully.",
+  robots: { index: false, follow: false },
+};
 
 import { SuccessRedirect } from "@/components/order/order-success/SuccessRedirect";
 import { getOrderByOrderId } from "@/actions/order.actions";

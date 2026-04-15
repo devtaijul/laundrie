@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { getUserReferralStats } from "@/actions/refer.actions";
+
+export const metadata: Metadata = {
+  title: "Referrals",
+  description:
+    "Share Laundrie with friends and earn credits for every successful referral.",
+};
 import { Card } from "@/components/ui/card";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { TopNavigation } from "@/components/layout/TopNavigation";

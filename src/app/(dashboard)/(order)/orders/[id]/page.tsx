@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { getOrderByOrderId } from "@/actions/order.actions";
+
+export const metadata: Metadata = {
+  title: "Order Details",
+  description: "View the details and status of your Laundrie order.",
+};
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { TopNavigation } from "@/components/layout/TopNavigation";
 import { OrderDetailsServer } from "@/components/order/OrderDetailsServer";

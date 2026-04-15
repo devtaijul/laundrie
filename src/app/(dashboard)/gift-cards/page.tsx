@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
+
+export const metadata: Metadata = {
+  title: "Gift Cards",
+  description: "Purchase and redeem Laundrie gift cards.",
+};
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { TopNavigation } from "@/components/layout/TopNavigation";
 import { GiftCardsTabs } from "@/components/gift-cards/GiftCardsTabs";

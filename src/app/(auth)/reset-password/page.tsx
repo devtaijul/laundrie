@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { validateResetToken } from "@/actions/user.actions";
+
+export const metadata: Metadata = {
+  title: "Reset Password",
+  description: "Set a new password for your Laundrie account.",
+  robots: { index: false, follow: false },
+};
 import { InvalidTokenUid } from "@/components/auth/InvalidTokenUid";
 import ResetPasswordPage from "@/components/auth/ResetPasswordPage";
 import { FullScreenLoader } from "@/components/layout/FullScreenLoader";
