@@ -1,12 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Calendar, Filter, Search, Upload } from "lucide-react";
+import { Suspense } from "react";
+import { OrderStatus } from "@/generated/prisma";
 import { OrderStatusTab } from "./OrderStatusTab";
 import { OrderTable } from "./OrderTable";
-import { Suspense } from "react";
 import { OrdersTableSkeleton } from "../skeletons/OrdersTableSkeleton";
-import { OrderStatus } from "@/generated/prisma";
+import { OrderSearchBar } from "./OrderSearchBar";
 
 const AdminOrders = async ({
   search,
@@ -18,54 +15,31 @@ const AdminOrders = async ({
   page?: number;
 }) => {
   return (
-    <>
-      <div className="p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Order List</h1>
-            <p className="text-sm text-muted-foreground">
-              Monitor and manage all customer orders in one place.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              October 2025
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Upload className="h-4 w-4" />
-              Export
-            </Button>
-          </div>
+    <div className="p-4 sm:p-6 space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Orders</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          Monitor and manage all customer orders in one place.
+        </p>
+      </div>
+
+      {/* Filters row */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Status tabs — scrollable on mobile */}
+        <div className="overflow-x-auto pb-1 -mb-1">
+          <OrderStatusTab currentStatus={status} />
         </div>
 
-        <Tabs defaultValue={status} className="w-full">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <OrderStatusTab />
-
-            <div className="flex gap-2">
-              <div className="relative flex-1 sm:flex-initial sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search transaction"
-                  className="pl-9"
-                />
-              </div>
-              <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          <TabsContent value={status}>
-            <Suspense fallback={<OrdersTableSkeleton />}>
-              <OrderTable status={status} search={search} page={page} />
-            </Suspense>
-          </TabsContent>
-        </Tabs>
+        {/* Search */}
+        <OrderSearchBar currentSearch={search} currentStatus={status} />
       </div>
-    </>
+
+      {/* Table / Cards */}
+      <Suspense fallback={<OrdersTableSkeleton />}>
+        <OrderTable status={status} search={search} page={page} />
+      </Suspense>
+    </div>
   );
 };
 

@@ -26,6 +26,9 @@ export const getStatusColor = (status: OrderStatus) => {
     case "PICKED_UP":
       return "bg-indigo-500";
 
+    case "WASHING":
+      return "bg-sky-500";
+
     case "DELIVERY_SCHEDULED":
       return "bg-orange-500";
 
