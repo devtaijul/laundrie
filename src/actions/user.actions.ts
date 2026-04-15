@@ -44,16 +44,20 @@ export const getCurrentUser = async () => {
   return actionResponse(user);
 };
 
-// Optional: replace with your real server action
 export async function saveAccountDetails(
   values: AccountFormValues,
   userId: string,
 ) {
-  // e.g., await updateAccountAction(values);
+  const { firstName, lastName, ...rest } = values;
 
   const user = await prisma.user.update({
     where: { id: userId },
-    data: values,
+    data: {
+      ...rest,
+      firstName,
+      lastName,
+      name: `${firstName} ${lastName}`.trim(),
+    },
   });
 
   return actionResponse(user);

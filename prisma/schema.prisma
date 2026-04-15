@@ -66,6 +66,8 @@ model User {
 
   // Profile
   name             String
+  firstName        String?
+  lastName         String?
   phone            String?   @unique @db.VarChar(32)
   email            String?   @unique @db.VarChar(191)
   marketing        Boolean   @default(false)

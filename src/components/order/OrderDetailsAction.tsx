@@ -14,6 +14,7 @@ export const OrderDetailsAction = ({ order }: { order: OrderExtends }) => {
       <EstimatedCostModal
         open={showCostModal}
         onOpenChange={setShowCostModal}
+        order={order}
       />
       <div className="space-y-3 pt-4">
         <Button

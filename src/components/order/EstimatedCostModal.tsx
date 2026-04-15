@@ -6,29 +6,42 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Order } from "@/generated/prisma";
+import { formatMoney } from "@/lib/utils";
 
 interface EstimatedCostModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  order: Order;
 }
 
 export const EstimatedCostModal = ({
   open,
   onOpenChange,
+  order,
 }: EstimatedCostModalProps) => {
-  const costBreakdown = {
-    estimatedWeight: {
-      label: "Estimated 11 lbs • Standard $2.00/lbs",
-      amount: "$22.00",
-    },
-    oversizedItem: { label: "1 Oversized Item • $8.00", amount: "$8.00" },
-    laundryCharges: { label: "Laundry Charges", amount: "$30.00" },
-    protectionPlan: { label: "Basic Poplin Protection Plan", amount: "FREE" },
-    trustSafetyFee: { label: "Trust and safety fee", amount: "$3.00" },
-    subtotal: "$33.00",
-    total: "$33.00",
-    recommendedTip: "$8.00",
-  };
+  const {
+    machinesCost,
+    oversizedCost,
+    softenerCost,
+    hangersCost,
+    ironCost,
+    deliveryFee,
+    subtotal,
+    tax,
+    coverageCost,
+    coverageType,
+    totalCents,
+    machineCount,
+    oversizedItems,
+    pillowItems,
+    duvetItems,
+    ironPieces,
+  } = order;
+
+  const totalOversized =
+    (oversizedItems ?? 0) + (pillowItems ?? 0) + (duvetItems ?? 0);
+  const total = totalCents / 100;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -53,85 +66,100 @@ export const EstimatedCostModal = ({
             cost is based on the weight of your laundry.
           </p>
 
-          <div className="space-y-3">
-            {/* Estimated Weight */}
+          <div className="space-y-3 text-sm">
+            {/* Machines */}
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                {costBreakdown.estimatedWeight.label}
+              <span className="text-muted-foreground">
+                Laundry Service ({machineCount ?? 1} machine
+                {(machineCount ?? 1) > 1 ? "s" : ""})
               </span>
-              <span className="text-sm font-medium">
-                {costBreakdown.estimatedWeight.amount}
-              </span>
+              <span className="font-medium">{formatMoney(machinesCost)}</span>
             </div>
 
-            {/* Oversized Item */}
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                {costBreakdown.oversizedItem.label}
-              </span>
-              <span className="text-sm font-medium">
-                {costBreakdown.oversizedItem.amount}
-              </span>
-            </div>
-
-            {/* Laundry Charges */}
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">
-                  {costBreakdown.laundryCharges.label}
+            {/* Oversized items */}
+            {totalOversized > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">
+                  Oversized Items ({totalOversized})
                 </span>
+                <span className="font-medium">{formatMoney(oversizedCost)}</span>
+              </div>
+            )}
+
+            {/* Softener */}
+            {softenerCost > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Softener addon</span>
+                <span className="font-medium">{formatMoney(softenerCost)}</span>
+              </div>
+            )}
+
+            {/* Hangers */}
+            {hangersCost > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Hangers finishing</span>
+                <span className="font-medium">{formatMoney(hangersCost)}</span>
+              </div>
+            )}
+
+            {/* Ironing */}
+            {ironCost > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">
+                  Ironing ({ironPieces ?? 0} pc)
+                </span>
+                <span className="font-medium">{formatMoney(ironCost)}</span>
+              </div>
+            )}
+
+            {/* Delivery fee */}
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Delivery fee</span>
+              <span className="font-medium">{formatMoney(deliveryFee)}</span>
+            </div>
+
+            {/* Laundry charges subtotal (before VAT) */}
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-1">
+                <span className="font-medium">Laundry Charges</span>
                 <HelpCircle className="h-4 w-4 text-muted-foreground" />
               </div>
-              <span className="text-sm font-medium">
-                {costBreakdown.laundryCharges.amount}
-              </span>
+              <span className="font-medium">{formatMoney(subtotal)}</span>
             </div>
 
             {/* Protection Plan */}
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                {costBreakdown.protectionPlan.label}
+              <span className="text-muted-foreground">
+                {coverageType ?? "Basic"} Protection Plan
               </span>
-              <span className="text-sm font-medium text-muted-foreground">
-                {costBreakdown.protectionPlan.amount}
-              </span>
+              {coverageCost > 0 ? (
+                <span className="font-medium">{formatMoney(coverageCost)}</span>
+              ) : (
+                <span className="text-muted-foreground font-medium">FREE</span>
+              )}
             </div>
 
-            {/* Trust and Safety Fee */}
+            {/* VAT */}
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                {costBreakdown.trustSafetyFee.label}
-              </span>
-              <span className="text-sm font-medium">
-                {costBreakdown.trustSafetyFee.amount}
-              </span>
+              <span className="text-muted-foreground">VAT (21%)</span>
+              <span className="font-medium">{formatMoney(tax)}</span>
             </div>
 
             {/* Divider */}
-            <div className="border-t border-border pt-3">
-              {/* Subtotal */}
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Subtotal</span>
-                <span className="text-sm font-medium">
-                  {costBreakdown.subtotal}
+            <div className="border-t pt-3 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Subtotal</span>
+                <span className="font-medium">
+                  {formatMoney(subtotal + (coverageCost ?? 0))}
                 </span>
               </div>
 
-              {/* Total */}
               <div className="flex justify-between items-center">
                 <span className="text-base font-semibold">Total</span>
-                <span className="text-xl font-bold">{costBreakdown.total}</span>
+                <span className="text-xl font-bold text-primary">
+                  {formatMoney(total)}
+                </span>
               </div>
-            </div>
-
-            {/* Recommended Tip */}
-            <div className="bg-primary/10 rounded-lg px-4 py-3 flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                Recommended tip
-              </span>
-              <span className="text-sm font-medium">
-                {costBreakdown.recommendedTip}
-              </span>
             </div>
           </div>
         </div>
