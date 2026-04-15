@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
+  Gift,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ const menuItems = [
   { title: "Drivers", url: "/admin/drivers", icon: Truck },
   { title: "Website Management", url: "/admin/website", icon: FileText },
   { title: "Reviews", url: "/admin/reviews", icon: Star },
+  { title: "Gift Cards", url: "/admin/gift-cards", icon: Gift },
   { title: "Finance", url: "/admin/finance", icon: DollarSign },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
@@ -44,7 +46,7 @@ export function AdminSidebar() {
 
   return (
     <div
-      className={`${isCollapsed ? "md:w-[80px]" : "md:w-[200px]"} transition-all duration-150`}
+      className={`${isCollapsed ? "md:w-20" : "md:w-50"} transition-all duration-150`}
     >
       <Sidebar
         className="border-r border-border bg-background"
@@ -83,7 +85,7 @@ export function AdminSidebar() {
                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
                         }`}
                       >
-                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        <item.icon className="h-5 w-5 shrink-0" />
                         {!isCollapsed && <span>{item.title}</span>}
                       </Link>
                     </SidebarMenuButton>

@@ -111,7 +111,8 @@ model User {
   // NextAuth relations
   accounts Account[]
   sessions Session[]
-  reviews  Review[]  @relation("UserReviews")
+  reviews           Review[]    @relation("UserReviews")
+  purchasedGiftCards GiftCard[] @relation("PurchasedGiftCards")
   // Orders as customer
   orders   Order[]   @relation("UserOrders")
 
@@ -260,6 +261,58 @@ model OrderEvent {
 
   occurredAt DateTime @default(now()) // when this step happened
   createdAt  DateTime @default(now())
+}
+
+enum GiftCardStatus {
+  ACTIVE
+  EXHAUSTED
+  EXPIRED
+  CANCELED
+}
+
+model GiftCard {
+  id                String          @id @default(cuid())
+  code              String          @unique
+  amountCents       Int
+  balanceCents      Int
+  status            GiftCardStatus  @default(ACTIVE)
+  expiresAt         DateTime?
+
+  // Purchaser
+  purchasedByUserId String?
+  purchasedBy       User?           @relation("PurchasedGiftCards", fields: [purchasedByUserId], references: [id])
+
+  // Recipient
+  recipientEmail    String?
+  recipientName     String?
+  senderName        String?
+  personalMessage   String?         @db.Text
+  sendToSelf        Boolean         @default(false)
+  sentAt            DateTime?
+
+  isAdminCreated    Boolean         @default(false)
+
+  redemptions       GiftCardRedemption[]
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([code])
+  @@index([purchasedByUserId])
+  @@index([recipientEmail])
+}
+
+model GiftCardRedemption {
+  id           String    @id @default(cuid())
+  giftCardId   String
+  giftCard     GiftCard  @relation(fields: [giftCardId], references: [id])
+  orderId      String?
+  userId       String?
+  amountCents  Int
+  note         String?
+  createdAt    DateTime  @default(now())
+
+  @@index([giftCardId])
 }
 
 model Payment {

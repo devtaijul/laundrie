@@ -203,3 +203,21 @@ export const checkIfEmailExists = async (email: string) => {
     return actionError("Email not registered. Please sign up first.");
   }
 };
+
+export const updateProfile = async (data: {
+  useType: "PERSONAL" | "BUSINESS";
+  isOver65: boolean;
+  marketing: boolean;
+  notifications: boolean;
+}) => {
+  const session = await auth();
+  if (!session) return actionError("Unauthorized");
+
+  const user = await prisma.user.update({
+    where: { id: session.user.id },
+    data,
+    omit: { passwordHash: true },
+  });
+
+  return actionResponse(user);
+};
