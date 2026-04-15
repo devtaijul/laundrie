@@ -7,6 +7,16 @@ export const SessionProviders = async ({
 }: {
   children: React.ReactNode;
 }) => {
-  const session = await auth();
+  let session = null;
+
+  try {
+    session = await auth();
+  } catch (error) {
+    // Stale/invalid JWT cookies should not break rendering.
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Failed to load session in SessionProviders", error);
+    }
+  }
+
   return <SessionProvider session={session}>{children}</SessionProvider>;
 };

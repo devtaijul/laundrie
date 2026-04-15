@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { ORDER_STATUS_OPTIONS } from "@/types/enums";
 import { Calendar, Filter, Search, Upload } from "lucide-react";
 import { OrderStatusTab } from "./OrderStatusTab";
 import { OrderTable } from "./OrderTable";
@@ -11,9 +10,11 @@ import { OrderStatus } from "@/generated/prisma";
 
 const AdminOrders = async ({
   search,
+  status = "ALL",
   page,
 }: {
   search?: string;
+  status?: OrderStatus | "ALL";
   page?: number;
 }) => {
   return (
@@ -38,7 +39,7 @@ const AdminOrders = async ({
           </div>
         </div>
 
-        <Tabs defaultValue="ALL" className="w-full">
+        <Tabs defaultValue={status} className="w-full">
           <div className="flex flex-col sm:flex-row gap-4">
             <OrderStatusTab />
 
@@ -57,19 +58,11 @@ const AdminOrders = async ({
             </div>
           </div>
 
-          {[{ label: "All", value: "ALL" }, ...ORDER_STATUS_OPTIONS].map(
-            (option) => (
-              <TabsContent key={option.value} value={option.value}>
-                <Suspense fallback={<OrdersTableSkeleton />}>
-                  <OrderTable
-                    status={option.value as OrderStatus}
-                    search={search}
-                    page={page}
-                  />
-                </Suspense>
-              </TabsContent>
-            )
-          )}
+          <TabsContent value={status}>
+            <Suspense fallback={<OrdersTableSkeleton />}>
+              <OrderTable status={status} search={search} page={page} />
+            </Suspense>
+          </TabsContent>
         </Tabs>
       </div>
     </>

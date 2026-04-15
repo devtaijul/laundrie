@@ -217,7 +217,7 @@ export async function payOrderAction(input: {
     {
       // safety: idempotency for the specific order
       idempotencyKey: `order_pay_${order.id}`,
-    }
+    },
   );
 
   // write/update order + payment history (provisional; webhook is source of truth)
@@ -247,7 +247,7 @@ export async function payOrderAction(input: {
 
 /** (optional) After 3DS, refresh */
 export async function refreshPaymentIntentStatusAction(
-  paymentIntentId: string
+  paymentIntentId: string,
 ) {
   const stripe = await getStripeClient();
 
@@ -352,7 +352,7 @@ export const getOrders = async ({
 
     const skip = (page - 1) * pageSize;
 
-    const [orders, totalCount] = await prisma.$transaction([
+    const [orders, totalCount] = await Promise.all([
       prisma.order.findMany({
         where,
         orderBy: { createdAt: "desc" },
