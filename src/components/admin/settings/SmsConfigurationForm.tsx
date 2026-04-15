@@ -26,7 +26,7 @@ export const SmsConfigurationForm = ({
     {
       successMessage: "Settings updated successfully",
       errorMessage: "Failed to update settings",
-    }
+    },
   );
   const {
     register,
@@ -94,7 +94,8 @@ export const SmsConfigurationForm = ({
         <Label htmlFor="smsFromNumber">From Number</Label>
         <Input
           id="smsFromNumber"
-          placeholder="+1(555)000-0000"
+          type="tel"
+          placeholder="+31 6 1234 5678"
           {...register("from_number")}
         />
         {errors.from_number && (

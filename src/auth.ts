@@ -7,6 +7,7 @@ import { prisma } from "./lib/prisma";
 import { SafeUser } from "./types/global-type";
 import { $Enums } from "./generated/prisma";
 import { generateUniqueReferralCode } from "./actions/refer.actions";
+import { normalizeIdentifier } from "./lib/phone";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
@@ -26,7 +27,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password", required: true },
       },
       async authorize(creds) {
-        const id = (creds?.identifier?.toString() ?? "").trim();
+        const id = normalizeIdentifier(creds?.identifier?.toString() ?? "");
         const password = creds?.password?.toString();
 
         if (!id || !password) return null;

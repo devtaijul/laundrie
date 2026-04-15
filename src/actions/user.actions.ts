@@ -9,6 +9,7 @@ import { actionError, actionResponse } from "@/lib/server/utils";
 import { AccountFormValues } from "@/lib/zodSchema";
 import { env } from "@/env/server";
 import PasswordReset from "@/app/emails/PasswordReset";
+import { normalizeNlPhone } from "@/lib/phone";
 
 const resend = new Resend(env.RESEND_API_KEY);
 
@@ -46,7 +47,7 @@ export const getCurrentUser = async () => {
 // Optional: replace with your real server action
 export async function saveAccountDetails(
   values: AccountFormValues,
-  userId: string
+  userId: string,
 ) {
   // e.g., await updateAccountAction(values);
 
@@ -141,7 +142,7 @@ export const validateResetToken = async (token: string, uid: string) => {
 export const changePassword = async (
   token: string,
   uid: string,
-  password: string
+  password: string,
 ) => {
   const user = await prisma.user.findUnique({
     where: { id: uid },
@@ -174,7 +175,15 @@ export const changePassword = async (
 };
 
 export const checkIfPhoneExists = async (phone: string) => {
-  const user = await prisma.user.findFirst({ where: { phone } });
+  const normalizedPhone = normalizeNlPhone(phone);
+
+  if (!normalizedPhone) {
+    return actionError("Enter a valid Netherlands phone number");
+  }
+
+  const user = await prisma.user.findFirst({
+    where: { phone: normalizedPhone },
+  });
   if (user) {
     return actionResponse({ exists: true });
   } else {

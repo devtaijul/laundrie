@@ -1,5 +1,5 @@
 import z from "zod";
-import { isValidPhoneNumber } from "react-phone-number-input";
+import { isValidNlPhone, normalizeNlPhone } from "@/lib/phone";
 
 // ✅ Zod schema
 export const signupSchema = z.object({
@@ -22,7 +22,8 @@ export const signupSchema = z.object({
   phone: z
     .string()
     .min(1, "Phone number is required")
-    .refine(isValidPhoneNumber, "Enter a valid phone number"),
+    .refine(isValidNlPhone, "Enter a valid Netherlands phone number")
+    .transform((value) => normalizeNlPhone(value)!),
   useType: z.enum(["PERSONAL", "BUSINESS"]),
   isOver65: z.enum(["yes", "no"], {
     error: "Please select an option",
@@ -37,7 +38,9 @@ export type SignupData = z.infer<typeof signupSchema>;
 const phoneSchema = z.object({
   phone: z
     .string()
-    .regex(/^\+?\d{8,15}$/, "Enter a valid phone number with country code"),
+    .min(1, "Phone number is required")
+    .refine(isValidNlPhone, "Enter a valid Netherlands phone number")
+    .transform((value) => normalizeNlPhone(value)!),
 });
 const otpSchema = z.object({
   otp: z.string().regex(/^\d{6}$/, "Enter the 6-digit code"),
@@ -73,7 +76,8 @@ export const accountFormSchema = z.object({
   phone: z
     .string()
     .min(1, "Phone number is required")
-    .refine(isValidPhoneNumber, "Enter a valid phone number"),
+    .refine(isValidNlPhone, "Enter a valid Netherlands phone number")
+    .transform((value) => normalizeNlPhone(value)!),
   email: z.string().email("Enter a valid email address"),
   theme: ThemeEnum,
 });
@@ -85,8 +89,19 @@ export type AccountFormValues = z.infer<typeof accountFormSchema>;
 export const businessSchema = z.object({
   business_name: z.string().min(1, "Business name is required"),
   business_email: z.string().email("Invalid email address"),
-  phone: z.string().min(1, "Phone number is required"),
-  whatsapp_number: z.string().optional(),
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .refine(isValidNlPhone, "Enter a valid Netherlands phone number")
+    .transform((value) => normalizeNlPhone(value)!),
+  whatsapp_number: z
+    .string()
+    .optional()
+    .transform((value) => value?.trim() ?? "")
+    .refine((value) => !value || isValidNlPhone(value), {
+      message: "Enter a valid Netherlands WhatsApp number",
+    })
+    .transform((value) => (value ? normalizeNlPhone(value)! : "")),
   business_address: z.string().min(1, "Business address is required"),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -134,7 +149,11 @@ export const smsConfigurationSchema = z.object({
   provider: z.string().min(1, "Provider is required"),
   api_key: z.string().min(1, "API Key is required"),
   auth_token: z.string().min(1, "Auth token is required"),
-  from_number: z.string().min(1, "From number is required"),
+  from_number: z
+    .string()
+    .min(1, "From number is required")
+    .refine(isValidNlPhone, "Enter a valid Netherlands phone number")
+    .transform((value) => normalizeNlPhone(value)!),
 });
 
 export type SMSConfigurationFormData = z.infer<typeof smsConfigurationSchema>;

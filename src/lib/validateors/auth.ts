@@ -1,9 +1,12 @@
 import { z } from "zod";
+import { isValidNlPhone, normalizeNlPhone } from "@/lib/phone";
 
 export const phoneSchema = z.object({
   phone: z
     .string()
-    .regex(/^\+?\d{8,15}$/, "Enter a valid phone number with country code"),
+    .min(1, "Phone number is required")
+    .refine(isValidNlPhone, "Enter a valid Netherlands phone number")
+    .transform((value) => normalizeNlPhone(value)!),
 });
 
 export const otpSchema = z.object({

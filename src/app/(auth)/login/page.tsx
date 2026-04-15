@@ -12,6 +12,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
+import { isValidNlPhone } from "@/lib/phone";
 
 // ---------- Zod schema ----------
 const loginSchema = z.object({
@@ -19,8 +20,8 @@ const loginSchema = z.object({
     .string()
     .min(1, "Email or phone number is required")
     .refine(
-      (val) => val.includes("@") || /^\+?\d{7,15}$/.test(val.replace(/[\s\-().]/g, "")),
-      "Enter a valid email or phone number"
+      (val) => val.includes("@") || isValidNlPhone(val),
+      "Enter a valid email or Netherlands phone number",
     ),
   password: z.string().min(1, "Password is required"),
 });
@@ -83,9 +84,7 @@ export default function Login() {
                 <h1 className="text-2xl font-semibold text-foreground">
                   Welcome back
                 </h1>
-                <p className="text-muted-foreground">
-                  Sign in to your account
-                </p>
+                <p className="text-muted-foreground">Sign in to your account</p>
               </div>
 
               <div className="space-y-4">
@@ -145,7 +144,9 @@ export default function Login() {
                     <div className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-card text-muted-foreground">OR</span>
+                    <span className="px-2 bg-card text-muted-foreground">
+                      OR
+                    </span>
                   </div>
                 </div>
 

@@ -100,7 +100,7 @@ export const AccountsDetailsForm: React.FC<{
                 name="phone"
                 render={({ field }) => (
                   <PhoneInput
-                    placeholder="Phone number"
+                    placeholder="Enter number without +31"
                     value={field.value}
                     onChange={field.onChange}
                   />

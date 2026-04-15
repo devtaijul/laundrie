@@ -19,6 +19,7 @@ import { Resend } from "resend";
 import { generateUniqueReferralCode } from "./refer.actions";
 import { $Enums } from "@/generated/prisma";
 import { PAGES } from "@/config/pages.config";
+import { normalizeIdentifier, normalizeNlPhone } from "@/lib/phone";
 
 const resend = new Resend(env.RESEND_API_KEY);
 
@@ -113,7 +114,8 @@ export async function verifyOtpAndLoginAction(formData: FormData) {
 
 // 3) Email or Phone + Password login
 export async function loginWithCredentialsAction(formData: FormData) {
-  const identifier = (formData.get("identifier")?.toString() ?? "").trim();
+  const rawIdentifier = (formData.get("identifier")?.toString() ?? "").trim();
+  const identifier = normalizeIdentifier(rawIdentifier);
   const password = formData.get("password")?.toString() ?? "";
 
   if (!identifier || !password) {
@@ -179,6 +181,11 @@ export async function registerUserAction({
 }: SignupData) {
   try {
     const lower = email.toLowerCase();
+    const normalizedPhone = normalizeNlPhone(phone);
+
+    if (!normalizedPhone) {
+      return actionError("Enter a valid Netherlands phone number");
+    }
 
     // 1) uniqueness
     const existingUser = await prisma.user.findFirst({
@@ -192,7 +199,7 @@ export async function registerUserAction({
     // 1.1) uniqueness
 
     const existingUserPhone = await prisma.user.findFirst({
-      where: { phone },
+      where: { phone: normalizedPhone },
       select: { id: true },
     });
     if (existingUserPhone) {
@@ -212,7 +219,7 @@ export async function registerUserAction({
         name: `${firstName} ${lastName}`,
         email: lower,
         passwordHash,
-        phone,
+        phone: normalizedPhone,
         marketing,
         notifications,
         useType,

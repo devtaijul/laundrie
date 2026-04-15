@@ -81,11 +81,27 @@ export const BusinessTabForm = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Phone Number *</Label>
-          <Input {...register("phone")} />
+          <Input
+            type="tel"
+            placeholder="+31 6 1234 5678"
+            {...register("phone")}
+          />
+          {errors.phone && (
+            <p className="text-red-500 text-sm">{errors.phone.message}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label>WhatsApp Number</Label>
-          <Input {...register("whatsapp_number")} />
+          <Input
+            type="tel"
+            placeholder="+31 6 1234 5678"
+            {...register("whatsapp_number")}
+          />
+          {errors.whatsapp_number && (
+            <p className="text-red-500 text-sm">
+              {errors.whatsapp_number.message}
+            </p>
+          )}
         </div>
       </div>
 

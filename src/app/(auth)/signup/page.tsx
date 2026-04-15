@@ -254,7 +254,7 @@ export default function Signup() {
             name="phone"
             render={({ field }) => (
               <PhoneInput
-                placeholder="Enter your phone number"
+                placeholder="Enter number without +31"
                 className="h-12"
                 value={field.value}
                 onChange={field.onChange}
@@ -374,8 +374,8 @@ export default function Signup() {
               {step === "email"
                 ? "Signup with email"
                 : step === "password"
-                ? "Password"
-                : "Profile Details"}
+                  ? "Password"
+                  : "Profile Details"}
             </CardTitle>
           </CardHeader>
           <CardContent>
