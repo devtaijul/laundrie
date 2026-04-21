@@ -1,8 +1,26 @@
+import { Suspense } from "react";
 import AdminFinance from "@/components/admin/AdminFinance";
-import React from "react";
+import { OrdersTableSkeleton } from "@/components/skeletons/OrdersTableSkeleton";
 
-const page = () => {
-  return <AdminFinance />;
-};
+type StatusFilter = "all" | "succeeded" | "canceled" | "processing";
 
-export default page;
+export default async function FinancePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; status?: string; page?: string }>;
+}) {
+  const { search = "", status = "all", page = "1" } = await searchParams;
+
+  const safeStatus: StatusFilter =
+    status === "succeeded" || status === "canceled" || status === "processing"
+      ? status
+      : "all";
+
+  const safePage = Math.max(1, parseInt(page, 10) || 1);
+
+  return (
+    <Suspense fallback={<OrdersTableSkeleton />}>
+      <AdminFinance search={search} status={safeStatus} page={safePage} />
+    </Suspense>
+  );
+}

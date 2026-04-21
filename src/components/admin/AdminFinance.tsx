@@ -1,251 +1,247 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar, Filter, MoreVertical, Search, Upload } from "lucide-react";
+  getFinanceStats,
+  getMonthlyRevenue,
+  getPayments,
+} from "@/actions/finance.actions";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "@/components/admin/Pagination";
+import { FinanceFilters } from "@/components/admin/FinanceFilters";
+import { RevenueChart } from "@/components/admin/RevenueChart";
+import { formatMoney } from "@/lib/utils";
+import { format } from "date-fns";
+import {
+  CreditCard,
+  TrendingUp,
+  XCircle,
+  Clock,
+  Banknote,
+} from "lucide-react";
 
-const payments = [
-  {
-    id: "PAY-005678",
-    orderId: "#8475783",
-    payWith: "Card",
-    date: "October 15, 2025",
-    amount: "$350.00",
-    status: "Paid",
-  },
-  {
-    id: "PAY-008912",
-    orderId: "#8475783",
-    payWith: "Bank",
-    date: "October 22, 2025",
-    amount: "$450.00",
-    status: "Paid",
-  },
-  {
-    id: "PAY-010345",
-    orderId: "#8475783",
-    payWith: "Card",
-    date: "October 5, 2025",
-    amount: "$200.00",
-    status: "Decline",
-  },
-  {
-    id: "PAY-015234",
-    orderId: "#8475783",
-    payWith: "Card",
-    date: "October 30, 2025",
-    amount: "$150.00",
-    status: "Paid",
-  },
-  {
-    id: "PAY-019456",
-    orderId: "#8475783",
-    payWith: "Card",
-    date: "October 12, 2025",
-    amount: "$700.00",
-    status: "Paid",
-  },
-  {
-    id: "PAY-013789",
-    orderId: "#8475783",
-    payWith: "Card",
-    date: "October 18, 2025",
-    amount: "$300.00",
-    status: "Paid",
-  },
-  {
-    id: "PAY-014901",
-    orderId: "#8475783",
-    payWith: "Bank",
-    date: "October 2, 2025",
-    amount: "$600.00",
-    status: "Paid",
-  },
-  {
-    id: "PAY-017890",
-    orderId: "#8475783",
-    payWith: "Bank",
-    date: "October 27, 2025",
-    amount: "$400.00",
-    status: "Decline",
-  },
-  {
-    id: "PAY-002567",
-    orderId: "#8475783",
-    payWith: "Card",
-    date: "October 9, 2025",
-    amount: "$250.00",
-    status: "Paid",
-  },
-  {
-    id: "PAY-019123",
-    orderId: "#8475783",
-    payWith: "Mobile Wallet",
-    date: "October 24, 2025",
-    amount: "$100.00",
-    status: "Paid",
-  },
-];
+type StatusFilter = "all" | "succeeded" | "canceled" | "processing";
 
-const AdminFinance = () => {
+const PAGE_SIZE = 10;
+
+const statusBadge = (status: string) => {
+  if (status === "succeeded")
+    return (
+      <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0">
+        Succeeded
+      </Badge>
+    );
+  if (status === "canceled")
+    return (
+      <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0">
+        Canceled
+      </Badge>
+    );
   return (
-    <>
-      <div className="p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Payment History
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Monitor and manage all Finance info
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              October 2025
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Upload className="h-4 w-4" />
-              Export
-            </Button>
-          </div>
-        </div>
+    <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0">
+      Processing
+    </Badge>
+  );
+};
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search customer"
-              className="pl-9"
-            />
-          </div>
+const AdminFinance = async ({
+  search = "",
+  status = "all",
+  page = 1,
+}: {
+  search?: string;
+  status?: StatusFilter;
+  page?: number;
+}) => {
+  const [statsRes, chartRes, paymentsRes] = await Promise.all([
+    getFinanceStats(),
+    getMonthlyRevenue(),
+    getPayments({ search, status, page, pageSize: PAGE_SIZE }),
+  ]);
 
-          <div className="flex gap-2">
-            <Select defaultValue="all">
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="decline">Decline</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+  const stats =
+    statsRes.success && statsRes.data
+      ? statsRes.data
+      : {
+          totalRevenueCents: 0,
+          totalPaid: 0,
+          totalFailed: 0,
+          totalProcessing: 0,
+        };
 
-        <div className="border border-border rounded-lg bg-card overflow-hidden">
+  const chartData =
+    chartRes.success && chartRes.data ? chartRes.data : [];
+
+  const payments =
+    paymentsRes.success && paymentsRes.data
+      ? paymentsRes.data.payments
+      : [];
+  const totalPages =
+    paymentsRes.success && paymentsRes.data
+      ? paymentsRes.data.totalPages
+      : 1;
+  const totalCount =
+    paymentsRes.success && paymentsRes.data
+      ? paymentsRes.data.totalCount
+      : 0;
+
+  return (
+    <div className="p-4 sm:p-6 space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Finance</h1>
+        <p className="text-sm text-muted-foreground">
+          Monitor payments and revenue
+        </p>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-5 flex items-start gap-4">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Banknote className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Revenue</p>
+              <p className="text-2xl font-bold">
+                {formatMoney(stats.totalRevenueCents / 100)}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-5 flex items-start gap-4">
+            <div className="p-2 rounded-lg bg-green-100">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Succeeded Payments
+              </p>
+              <p className="text-2xl font-bold">{stats.totalPaid}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-5 flex items-start gap-4">
+            <div className="p-2 rounded-lg bg-amber-100">
+              <Clock className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Processing</p>
+              <p className="text-2xl font-bold">{stats.totalProcessing}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-5 flex items-start gap-4">
+            <div className="p-2 rounded-lg bg-red-100">
+              <XCircle className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Canceled</p>
+              <p className="text-2xl font-bold">{stats.totalFailed}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Revenue chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Monthly Revenue ({new Date().getFullYear()})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RevenueChart data={chartData} />
+        </CardContent>
+      </Card>
+
+      {/* Filters */}
+      <FinanceFilters currentSearch={search} currentStatus={status} />
+
+      {/* Table */}
+      {payments.length === 0 ? (
+        <Card className="p-12 flex flex-col items-center gap-3 text-center">
+          <CreditCard className="h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm font-medium text-muted-foreground">
+            No payments found
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Try adjusting your search or filter.
+          </p>
+        </Card>
+      ) : (
+        <div className="border border-border rounded-xl bg-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50">
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4">
-                    <Checkbox />
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/40">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Payment ID
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Pay ID
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Order ID
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Pay With
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden md:table-cell">
+                    Customer
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden lg:table-cell">
                     Date
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Amount
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Status
                   </th>
-                  <th className="text-left py-3 px-4"></th>
                 </tr>
               </thead>
-              <tbody className="bg-background">
-                {payments.map((payment, index) => (
-                  <tr
-                    key={payment.id}
-                    className={`border-b border-border hover:bg-muted/50 ${index === 1 ? "bg-blue-50/50" : ""}`}
-                  >
-                    <td className="py-3 px-4">
-                      <Checkbox checked={index === 1} />
+              <tbody className="divide-y divide-border">
+                {payments.map((p) => (
+                  <tr key={p.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="py-3 px-4 font-mono text-xs text-muted-foreground truncate max-w-[140px]">
+                      {p.paymentIntentId}
                     </td>
-                    <td className="py-3 px-4 text-sm font-medium">
-                      {payment.id}
+                    <td className="py-3 px-4 font-medium">
+                      {p.order?.orderId ?? "—"}
                     </td>
-                    <td className="py-3 px-4 text-sm">{payment.orderId}</td>
-                    <td className="py-3 px-4 text-sm">{payment.payWith}</td>
-                    <td className="py-3 px-4 text-sm">{payment.date}</td>
-                    <td className="py-3 px-4 text-sm font-medium">
-                      {payment.amount}
+                    <td className="py-3 px-4 hidden md:table-cell">
+                      <div>
+                        <p className="font-medium">{p.order?.user?.name ?? "—"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {p.order?.user?.email ?? ""}
+                        </p>
+                      </div>
                     </td>
-                    <td className="py-3 px-4">
-                      <Badge
-                        variant="secondary"
-                        className={
-                          payment.status === "Paid"
-                            ? "bg-green-100 text-green-700 hover:bg-green-100"
-                            : "bg-red-100 text-red-700 hover:bg-red-100"
-                        }
-                      >
-                        {payment.status}
-                      </Badge>
+                    <td className="py-3 px-4 text-muted-foreground hidden lg:table-cell whitespace-nowrap">
+                      {format(new Date(p.createdAt), "MMM d, yyyy")}
                     </td>
-                    <td className="py-3 px-4">
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
+                    <td className="py-3 px-4 font-semibold">
+                      {formatMoney(p.amountCents / 100)}
                     </td>
+                    <td className="py-3 px-4">{statusBadge(p.status)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <div className="flex items-center justify-center gap-2 py-4 border-t border-border">
-            <Button variant="outline" size="icon">
-              «
-            </Button>
-            <Button variant="outline" size="icon">
-              ‹
-            </Button>
-            <Button variant="default" size="icon" className="bg-primary">
-              1
-            </Button>
-            <Button variant="outline" size="icon">
-              2
-            </Button>
-            <Button variant="outline" size="icon">
-              3
-            </Button>
-            <span className="px-2">...</span>
-            <Button variant="outline" size="icon">
-              10
-            </Button>
-            <Button variant="outline" size="icon">
-              ›
-            </Button>
-            <Button variant="outline" size="icon">
-              »
-            </Button>
+          <div className="px-4 py-2 border-t border-border text-xs text-muted-foreground">
+            {totalCount} payment{totalCount !== 1 ? "s" : ""} total
           </div>
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            basePath="/admin/finance"
+            search={search}
+            status={status !== "all" ? status : undefined}
+          />
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 };
 
