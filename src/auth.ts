@@ -8,7 +8,6 @@ import { SafeUser } from "./types/global-type";
 import { $Enums } from "./generated/prisma";
 import { generateUniqueReferralCode } from "./actions/refer.actions";
 import { normalizeIdentifier } from "./lib/phone";
-const name = "dklfsjdf";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,

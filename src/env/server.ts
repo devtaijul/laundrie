@@ -9,8 +9,6 @@ export const env = createEnv({
     DATABASE_URL: z.string().url(),
 
     SUPPORT_EMAIL: z.string().email(),
-    MAILGUN_SMTP_USER: z.string().min(1),
-    MAILGUN_SMTP_PASS: z.string().min(1),
 
     // If not using Ably now, keep it optional:
     ABLY_API_KEY: z.string().min(1).optional(),
@@ -23,10 +21,6 @@ export const env = createEnv({
 
     // Resend Api credentials
     RESEND_API_KEY: z.string().min(1),
-
-    // Google OAuth
-    GOOGLE_CLIENT_ID: z.string().min(1),
-    GOOGLE_CLIENT_SECRET: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().url(),
@@ -40,8 +34,6 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
 
     SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,
-    MAILGUN_SMTP_USER: process.env.MAILGUN_SMTP_USER,
-    MAILGUN_SMTP_PASS: process.env.MAILGUN_SMTP_PASS,
     ABLY_API_KEY: process.env.ABLY_API_KEY,
 
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
@@ -57,8 +49,6 @@ export const env = createEnv({
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:
       process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   },
   skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
 });
