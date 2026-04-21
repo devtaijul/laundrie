@@ -15,8 +15,6 @@ import {
 } from "date-fns";
 import type { DashboardPeriod } from "@/lib/dashboard-period";
 
-export type { DashboardPeriod };
-
 function parseDate(dateStr: string): Date {
   const [y, m, d] = dateStr.split("-").map(Number);
   return new Date(y, m - 1, d);
