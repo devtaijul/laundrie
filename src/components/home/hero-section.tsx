@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export const HeroSection = () => {
   return (
-    <section className="relative min-h-screen bg-primary overflow-hidden">
+    <section className="relative min-h-[70vh] md:min-h-screen bg-primary overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
@@ -22,14 +22,14 @@ export const HeroSection = () => {
       <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-black/10" />
 
       {/* Main Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 sm:pt-40 pb-10 sm:pb-20 min-h-screen flex flex-col justify-between">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 sm:pt-40 pb-10 sm:pb-20  min-h-[70vh] md:min-h-screen flex flex-col  justify-center">
         {/* Top Left Content */}
-        <div className="space-y-3 sm:space-y-4 max-w-md mt-40 sm:mt-0">
+        <div className="space-y-3 sm:space-y-4 max-w-2xl   sm:mt-0">
           <span className="text-xs sm:text-sm uppercase tracking-widest text-[#d1d5db] font-normal">
             Top Feature
           </span>
 
-          <h1 className="text-3xl sm:text-4xl font-normal text-white leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
             Effortless Laundry Care Anytime
           </h1>
 
@@ -51,8 +51,8 @@ export const HeroSection = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end pb-4 sm:pb-8 gap-6">
-          {/* Customer Avatars + Rating */}
+        {/*  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end pb-4 sm:pb-8 gap-6">
+       
           <div className="flex items-center gap-3">
             <div className="flex -space-x-3">
               {[
@@ -81,7 +81,7 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          {/* Big Heading Bottom Right */}
+        
           <div className="text-right">
             <h2 className="text-5xl sm:text-6xl md:text-8xl lg:text-[115px] font-medium text-white leading-none">
               The Smart way
@@ -90,7 +90,7 @@ export const HeroSection = () => {
               To Do Laundry
             </h2>
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );

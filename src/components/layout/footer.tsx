@@ -45,16 +45,16 @@ export const Footer = () => {
             </Link>
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Logo & Tagline */}
           <div className="col-span-2 lg:col-span-2 space-y-4">
-            <p className="text-white/80 text-2xl sm:text-4xl md:text-5xl font-bold">
+            <p className="text-white/80 text-2xl sm:text-3xl md:text-4xl font-bold">
               Laundry Tips and Exclusive Offers Await!
             </p>
           </div>
 
           {/* Menu */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h4 className="font-semibold text-sm uppercase tracking-wide text-white/60">
               Menu
             </h4>
@@ -84,7 +84,7 @@ export const Footer = () => {
                 Pricing
               </Link>
             </div>
-          </div>
+          </div> */}
 
           {/* Utility Pages */}
           <div className="space-y-4">

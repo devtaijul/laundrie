@@ -15,7 +15,7 @@ import { TopNavigation } from "@/components/layout/TopNavigation";
 import { Mail, Eye, EyeOff, Gift } from "lucide-react";
 import { SignupData, signupSchema } from "@/lib/zodSchema";
 import { useAsyncAction } from "@/hooks/use-async-action";
-import { registerUserAction } from "@/actions/auth.actions";
+import { checkEmailAvailableAction, registerUserAction } from "@/actions/auth.actions";
 import { TYPE_OF_USE_OPTIONS } from "@/types/enums";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/utils";
@@ -80,9 +80,19 @@ export function SignupForm({ referralCode }: { referralCode?: string }) {
     { text: "8+ Characters", met: (password || "").length >= 8 },
   ];
 
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+
   const nextFromEmail = async () => {
     const ok = await trigger(["email"]);
-    if (ok) setStep("password");
+    if (!ok) return;
+    setIsCheckingEmail(true);
+    const { available } = await checkEmailAvailableAction(watch("email"));
+    setIsCheckingEmail(false);
+    if (!available) {
+      toast.error("This email is already registered. Please log in instead.");
+      return;
+    }
+    setStep("password");
   };
 
   const nextFromPassword = async () => {
@@ -133,9 +143,10 @@ export function SignupForm({ referralCode }: { referralCode?: string }) {
         <Button
           type="button"
           onClick={nextFromEmail}
+          disabled={isCheckingEmail}
           className="w-full h-12 bg-gradient-primary hover:bg-primary-hover"
         >
-          Continue
+          {isCheckingEmail ? "Checking..." : "Continue"}
         </Button>
       </div>
 

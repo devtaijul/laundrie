@@ -291,6 +291,14 @@ export async function registerUserAction({
   }
 }
 
+export async function checkEmailAvailableAction(email: string) {
+  const existing = await prisma.user.findFirst({
+    where: { email: email.toLowerCase() },
+    select: { id: true },
+  });
+  return { available: !existing };
+}
+
 export async function resendVerificationEmailAction(email: string) {
   const user = await prisma.user.findFirst({
     where: { email: email.toLowerCase() },

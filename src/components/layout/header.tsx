@@ -53,9 +53,6 @@ export const Header = () => {
   const textColor = showTransparent ? "text-white" : "text-foreground";
   const logoFilter = showTransparent ? "brightness-0 invert" : "";
 
-  console.log("session", session);
-  console.log("status", status);
-
   return (
     <>
       <header
@@ -78,7 +75,7 @@ export const Header = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
+            {/* <nav className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -88,7 +85,7 @@ export const Header = () => {
                   {link.label}
                 </Link>
               ))}
-            </nav>
+            </nav> */}
 
             <div className="flex items-center space-x-4">
               {/* Sign In */}
