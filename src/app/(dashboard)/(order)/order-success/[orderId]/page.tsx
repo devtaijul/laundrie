@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { CheckCircle } from "lucide-react";
+import { getOrderByOrderId } from "@/actions/order.actions";
+import { SuccessOrderPage } from "@/components/order/SuccessOrderPage";
+import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Order Confirmed",
@@ -7,25 +9,32 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-import { SuccessRedirect } from "@/components/order/order-success/SuccessRedirect";
-import { getOrderByOrderId } from "@/actions/order.actions";
-import { Suspense } from "react";
-import OrderSuccessSkeleton from "@/components/skeletons/OrderSuccessSkeleton";
-import { SuccessOrderPage } from "@/components/order/SuccessOrderPage";
-
 const OrderSuccess = async ({
   params,
 }: {
   params: Promise<{ orderId: string }>;
 }) => {
   const { orderId } = await params;
-
   const response = await getOrderByOrderId(orderId);
 
+  if (!response?.success || !response.data) {
+    notFound();
+  }
+
+  const order = response.data;
+
   return (
-    <Suspense fallback={<OrderSuccessSkeleton />}>
-      <SuccessOrderPage />
-    </Suspense>
+    <SuccessOrderPage
+      urlOrderId={orderId}
+      order={{
+        id: order.id,
+        orderId: order.orderId,
+        createdAt: order.createdAt,
+        totalCents: order.totalCents,
+        deliverySpeed: order.deliverySpeed,
+        status: order.status,
+      }}
+    />
   );
 };
 

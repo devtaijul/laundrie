@@ -11,7 +11,7 @@ import { coverageOptions } from "@/lib/data";
 export const CoverageStep = () => {
   const { state, dispatch } = useOrder();
   const [selectedCoverage, setSelectedCoverage] = useState(
-    state.data.coverageType
+    state.data.coverageType,
   );
 
   const handleSelect = (id: "basic" | "premium" | "premium-plus") => {
@@ -35,7 +35,7 @@ export const CoverageStep = () => {
         <div>
           <h2 className="text-xl font-bold text-foreground mb-2">Coverage</h2>
           <p className="text-muted-foreground">
-            Poplin&apos;s Protection Plan covers you in the rare
+            Laundrie&apos;s Protection Plan covers you in the rare
           </p>
           <p className="text-muted-foreground">instance of damage or loss.</p>
         </div>
@@ -99,7 +99,7 @@ export const CoverageStep = () => {
       <div className="">
         <p className="text-sm cursor-pointer">
           <span className="text-primary">Tap here</span> for more information
-          about Poplin&apos;s Protection Plan.
+          about Laundrie&apos;s Protection Plan.
         </p>
       </div>
 

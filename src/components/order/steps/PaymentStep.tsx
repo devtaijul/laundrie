@@ -15,14 +15,16 @@ import {
   Elements,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { useOrderCalculation } from "@/hooks/use-order-calculation";
+import { formatMoney } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { TotalBlock } from "./TotalBlock";
 
 function Inner() {
   const router = useRouter();
   const { dispatch } = useOrder();
   const { data: session } = useSession();
+  const { subtotal, deliveryFee, tax, coverageCost, total } = useOrderCalculation();
 
   const {
     zip,
@@ -64,8 +66,29 @@ function Inner() {
 
   return (
     <div className="px-6 py-8 space-y-8 max-w-lg mx-auto">
-      <div>
-        <TotalBlock />
+      <div className="bg-blue-50 rounded-lg p-4 space-y-2">
+        <div className="flex justify-between text-sm text-muted-foreground">
+          <span>Subtotal</span>
+          <span>{formatMoney(subtotal - deliveryFee)}</span>
+        </div>
+        <div className="flex justify-between text-sm text-muted-foreground">
+          <span>Delivery</span>
+          <span>{formatMoney(deliveryFee)}</span>
+        </div>
+        {coverageCost > 0 && (
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Coverage</span>
+            <span>{formatMoney(coverageCost)}</span>
+          </div>
+        )}
+        <div className="flex justify-between text-sm text-muted-foreground">
+          <span>VAT</span>
+          <span>{formatMoney(tax)}</span>
+        </div>
+        <div className="flex justify-between items-center border-t pt-2 mt-1">
+          <span className="text-sm font-medium">Total</span>
+          <span className="text-xl font-bold text-primary">{formatMoney(total)}</span>
+        </div>
       </div>
       <div>
         <Label>Card Number</Label>
