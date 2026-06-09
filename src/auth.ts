@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { hashToken } from "./lib/helper/auth";
@@ -65,7 +66,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth(async () => {
     googleClientSecret = "";
   }
 
-  const providers = [credentialsProvider];
+  const providers: NextAuthConfig["providers"] = [credentialsProvider];
 
   if (googleClientId && googleClientSecret) {
     providers.unshift(
