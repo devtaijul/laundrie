@@ -175,13 +175,43 @@ export type CustomerNotificationFormData = z.infer<
 // schemas/security.schema.ts
 export const securitySchema = z.object({
   two_factor_auth: z.boolean(),
-  session_timeout: z.number().int().min(60, "Minimum 60 seconds").max(86400, "Maximum 24 hours"),
-  max_login_attempts: z.number().int().min(1, "Minimum 1").max(20, "Maximum 20"),
+  session_timeout: z
+    .number()
+    .int()
+    .min(60, "Minimum 60 seconds")
+    .max(86400, "Maximum 24 hours"),
+  max_login_attempts: z
+    .number()
+    .int()
+    .min(1, "Minimum 1")
+    .max(20, "Maximum 20"),
   enable_ip_whitelist: z.boolean(),
   ip_whitelist: z.string(), // comma-separated IPs; parsed server-side
 });
 
 export type SecurityFormData = z.infer<typeof securitySchema>;
+
+export const authSettingSchema = z
+  .object({
+    google_client_id: z.string().trim(),
+    google_client_secret: z.string().trim(),
+  })
+  .refine(
+    (data) => {
+      const hasClientId = data.google_client_id.length > 0;
+      const hasClientSecret = data.google_client_secret.length > 0;
+      return (
+        (hasClientId && hasClientSecret) || (!hasClientId && !hasClientSecret)
+      );
+    },
+    {
+      message:
+        "Provide both Google Client ID and Client Secret, or keep both empty",
+      path: ["google_client_secret"],
+    },
+  );
+
+export type AuthSettingFormData = z.infer<typeof authSettingSchema>;
 
 // schemas/email-configuration.schema.ts
 export const emailConfigurationSchema = z.object({
@@ -193,7 +223,9 @@ export const emailConfigurationSchema = z.object({
   name: z.string().min(1, "Sender name is required"),
 });
 
-export type EmailConfigurationFormData = z.infer<typeof emailConfigurationSchema>;
+export type EmailConfigurationFormData = z.infer<
+  typeof emailConfigurationSchema
+>;
 
 // schemas/admin-profile.schema.ts
 export const adminProfileSchema = z.object({

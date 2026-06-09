@@ -111,12 +111,12 @@ model User {
   updatedAt DateTime  @updatedAt
 
   // NextAuth relations
-  accounts Account[]
-  sessions Session[]
-  reviews           Review[]    @relation("UserReviews")
+  accounts           Account[]
+  sessions           Session[]
+  reviews            Review[]   @relation("UserReviews")
   purchasedGiftCards GiftCard[] @relation("PurchasedGiftCards")
   // Orders as customer
-  orders   Order[]   @relation("UserOrders")
+  orders             Order[]    @relation("UserOrders")
 
   // Orders as rider
   riderOrders Order[] @relation("RiderOrders")
@@ -187,7 +187,7 @@ model Review {
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   userId      String
   user        User     @relation("UserReviews", fields: [userId], references: [id])
-  rating      Int      // 1–5
+  rating      Int // 1–5
   comment     String   @db.Text
   adminReply  String?  @db.Text
   isPublished Boolean  @default(true)
@@ -277,31 +277,31 @@ enum GiftCardStatus {
 }
 
 model GiftCard {
-  id                String          @id @default(cuid())
-  code              String          @unique
-  amountCents       Int
-  balanceCents      Int
-  status            GiftCardStatus  @default(ACTIVE)
-  expiresAt         DateTime?
+  id           String         @id @default(cuid())
+  code         String         @unique
+  amountCents  Int
+  balanceCents Int
+  status       GiftCardStatus @default(ACTIVE)
+  expiresAt    DateTime?
 
   // Purchaser
   purchasedByUserId String?
-  purchasedBy       User?           @relation("PurchasedGiftCards", fields: [purchasedByUserId], references: [id])
+  purchasedBy       User?   @relation("PurchasedGiftCards", fields: [purchasedByUserId], references: [id])
 
   // Recipient
-  recipientEmail    String?
-  recipientName     String?
-  senderName        String?
-  personalMessage   String?         @db.Text
-  sendToSelf        Boolean         @default(false)
-  sentAt            DateTime?
+  recipientEmail  String?
+  recipientName   String?
+  senderName      String?
+  personalMessage String?   @db.Text
+  sendToSelf      Boolean   @default(false)
+  sentAt          DateTime?
 
-  isAdminCreated    Boolean         @default(false)
+  isAdminCreated Boolean @default(false)
 
-  redemptions       GiftCardRedemption[]
+  redemptions GiftCardRedemption[]
 
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([code])
   @@index([purchasedByUserId])
@@ -309,24 +309,24 @@ model GiftCard {
 }
 
 model GiftCardRedemption {
-  id           String    @id @default(cuid())
-  giftCardId   String
-  giftCard     GiftCard  @relation(fields: [giftCardId], references: [id])
-  orderId      String?
-  userId       String?
-  amountCents  Int
-  note         String?
-  createdAt    DateTime  @default(now())
+  id          String   @id @default(cuid())
+  giftCardId  String
+  giftCard    GiftCard @relation(fields: [giftCardId], references: [id])
+  orderId     String?
+  userId      String?
+  amountCents Int
+  note        String?
+  createdAt   DateTime @default(now())
 
   @@index([giftCardId])
 }
 
 model Referral {
-  id                  String   @id @default(cuid())
+  id                  String @id @default(cuid())
   referrerId          String
-  referrer            User     @relation("ReferrerReferrals", fields: [referrerId], references: [id])
-  referreeId          String   @unique
-  referree            User     @relation("ReferreeReferral", fields: [referreeId], references: [id])
+  referrer            User   @relation("ReferrerReferrals", fields: [referrerId], references: [id])
+  referreeId          String @unique
+  referree            User   @relation("ReferreeReferral", fields: [referreeId], references: [id])
   code                String
   referreeCreditCents Int
   referrerCreditCents Int
@@ -425,6 +425,15 @@ model SMSConfiguration {
   website     Website?
 }
 
+model AuthSetting {
+  id                   String   @id @default(cuid())
+  google_client_id     String?
+  google_client_secret String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  website              Website?
+}
+
 model CustomerNotification {
   id                       String   @id @default(cuid())
   order_confirmation_email Boolean  @default(false)
@@ -450,6 +459,8 @@ model Website {
   email_config             EmailConfiguration   @relation(fields: [email_config_id], references: [id])
   sms_config_id            String               @unique
   sms_config               SMSConfiguration     @relation(fields: [sms_config_id], references: [id])
+  auth_setting_id          String?              @unique
+  auth_setting             AuthSetting?         @relation(fields: [auth_setting_id], references: [id])
   customer_notification_id String               @unique
   customer_notification    CustomerNotification @relation(fields: [customer_notification_id], references: [id])
   createdAt                DateTime             @default(now())

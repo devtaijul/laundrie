@@ -3,6 +3,7 @@ import { BusinessTab } from "./settings/BusinessTab";
 import { NotificationTab } from "./settings/NotificationTab";
 import { PaymentTab } from "./settings/PaymentTab";
 import { SecurityTab } from "./settings/SecurityTab";
+import { AuthTab } from "./settings/AuthTab";
 
 export default function AdminSettings() {
   return (
@@ -15,11 +16,12 @@ export default function AdminSettings() {
       </div>
 
       <Tabs className="w-full" defaultValue="notifications">
-        <TabsList className="grid w-full max-w-md grid-cols-4 mb-6">
+        <TabsList className="grid w-full max-w-xl grid-cols-5 mb-6">
           <TabsTrigger value="business">Business</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="auth">Auth</TabsTrigger>
         </TabsList>
 
         {/* Business Tab */}
@@ -33,6 +35,9 @@ export default function AdminSettings() {
 
         {/* Security Tab */}
         <SecurityTab />
+
+        {/* Auth Tab */}
+        <AuthTab />
       </Tabs>
     </div>
   );

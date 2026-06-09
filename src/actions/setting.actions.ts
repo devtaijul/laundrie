@@ -7,8 +7,10 @@ import { actionError, actionResponse } from "@/lib/server/utils";
 import {
   AdminNotificationFormData,
   AdminProfileFormData,
+  AuthSettingFormData,
   BusinessFormData,
   ChangePasswordFormData,
+  CustomerNotificationFormData,
   EmailConfigurationFormData,
   PaymentSettingFormData,
   SecurityFormData,
@@ -112,10 +114,66 @@ export const getCustomerNotificationSetting = async () => {
   }
 };
 
+export const getAuthSetting = async () => {
+  try {
+    let authSetting = await prisma.authSetting.findFirst();
+
+    if (!authSetting) {
+      authSetting = await prisma.authSetting.create({
+        data: {
+          google_client_id: "",
+          google_client_secret: "",
+        },
+      });
+    }
+
+    return actionResponse(authSetting);
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to get auth settings");
+  }
+};
+
+export const isGoogleAuthEnabled = async () => {
+  try {
+    let authSetting = await prisma.authSetting.findFirst({
+      select: {
+        id: true,
+        google_client_id: true,
+        google_client_secret: true,
+      },
+    });
+
+    if (!authSetting) {
+      authSetting = await prisma.authSetting.create({
+        data: {
+          google_client_id: "",
+          google_client_secret: "",
+        },
+        select: {
+          id: true,
+          google_client_id: true,
+          google_client_secret: true,
+        },
+      });
+    }
+
+    const enabled = Boolean(
+      authSetting?.google_client_id?.trim() &&
+      authSetting?.google_client_secret?.trim(),
+    );
+
+    return actionResponse({ enabled });
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to get auth status");
+  }
+};
+
 // UPDATE : Settings
 export const updateBusinessSetting = async (
   data: BusinessFormData,
-  id: string
+  id: string,
 ) => {
   try {
     const businessSettings = await prisma.business.update({
@@ -132,7 +190,7 @@ export const updateBusinessSetting = async (
 
 export const updatePaymentSetting = async (
   data: PaymentSettingFormData,
-  id: string
+  id: string,
 ) => {
   try {
     const paymentSettings = await prisma.paymentSetting.update({
@@ -149,7 +207,7 @@ export const updatePaymentSetting = async (
 
 export const updateAdminNotificationSetting = async (
   data: AdminNotificationFormData,
-  id: string
+  id: string,
 ) => {
   try {
     const adminNotificationSettings = await prisma.adminNotification.update({
@@ -166,7 +224,7 @@ export const updateAdminNotificationSetting = async (
 
 export const updateSmsConfigurationSetting = async (
   data: SMSConfigurationFormData,
-  id: string
+  id: string,
 ) => {
   try {
     const smsConfigurationSettings = await prisma.sMSConfiguration.update({
@@ -182,8 +240,8 @@ export const updateSmsConfigurationSetting = async (
 };
 
 export const updateCustomerNotificationSetting = async (
-  data: any,
-  id: string
+  data: CustomerNotificationFormData,
+  id: string,
 ) => {
   try {
     const customerNotificationSettings =
@@ -196,6 +254,23 @@ export const updateCustomerNotificationSetting = async (
   } catch (error) {
     console.log(error);
     return actionError("Failed to update settings");
+  }
+};
+
+export const updateAuthSetting = async (
+  data: AuthSettingFormData,
+  id: string,
+) => {
+  try {
+    const authSetting = await prisma.authSetting.update({
+      where: { id },
+      data,
+    });
+
+    return actionResponse(authSetting);
+  } catch (error) {
+    console.log(error);
+    return actionError("Failed to update auth settings");
   }
 };
 
@@ -214,7 +289,7 @@ export const getSecuritySetting = async () => {
 
 export const updateSecuritySetting = async (
   data: SecurityFormData,
-  id: string
+  id: string,
 ) => {
   try {
     const { ip_whitelist, ...rest } = data;
@@ -251,7 +326,7 @@ export const getEmailConfigurationSetting = async () => {
 
 export const updateEmailConfigurationSetting = async (
   data: EmailConfigurationFormData,
-  id: string
+  id: string,
 ) => {
   try {
     const emailConfig = await prisma.emailConfiguration.update({

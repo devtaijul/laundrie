@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LoginClient from "@/components/auth/LoginClient";
+import { isGoogleAuthEnabled } from "@/actions/setting.actions";
 
 export const metadata: Metadata = {
   title: "Login",
@@ -8,6 +9,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function Login() {
-  return <LoginClient />;
+export default async function Login() {
+  const googleAuthStatus = await isGoogleAuthEnabled();
+  const showGoogleLogin =
+    googleAuthStatus.success && googleAuthStatus.data
+      ? googleAuthStatus.data.enabled
+      : false;
+
+  return <LoginClient showGoogleLogin={showGoogleLogin} />;
 }
