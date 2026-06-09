@@ -7,9 +7,16 @@ import React from "react";
 const layout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth();
 
-  if (!session || (session && session.user.role !== "ADMIN")) {
-    // redirect to home if logged in
-    redirect(PAGES.HOME);
+  if (!session?.user) {
+    redirect(PAGES.LOGIN);
+  }
+
+  if (session.user.role !== "ADMIN") {
+    if (session.user.role === "DRIVER") {
+      redirect(PAGES.DRIVER.ROOT);
+    }
+
+    redirect(PAGES.ORDERS);
   }
 
   return <AdminLayout>{children}</AdminLayout>;
