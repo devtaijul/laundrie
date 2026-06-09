@@ -63,7 +63,7 @@ async function clearDatabase() {
 }
 
 async function seedAdminAndSettings() {
-  const adminEmail = "admin@laundrie.com";
+  const adminEmail = "laundrie.nl@hotmail.com";
   const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin@123";
   const defaultGoogleClientId = process.env.SEED_GOOGLE_CLIENT_ID ?? "";
   const defaultGoogleClientSecret = process.env.SEED_GOOGLE_CLIENT_SECRET ?? "";
@@ -95,7 +95,7 @@ async function seedAdminAndSettings() {
   const business = await prisma.business.create({
     data: {
       business_name: "Laundrie",
-      business_email: "info@laundrie.local",
+      business_email: "laundrie.nl@hotmail.com",
       phone: "+31000000000",
       whatsapp_number: "+31000000000",
       business_address: "Example Street 1",

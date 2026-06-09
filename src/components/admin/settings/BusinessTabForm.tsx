@@ -129,7 +129,7 @@ export const BusinessTabForm = ({
 
       {/* Logo Upload */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-3">
+        {/* <div className="space-y-3">
           <Label>Business Logo</Label>
           <input type="file" className="hidden" id="logo" />
           <div className="border-2 border-dashed p-6 rounded-lg text-center">
@@ -143,10 +143,10 @@ export const BusinessTabForm = ({
               </Button>
             </label>
           </div>
-        </div>
+        </div> */}
 
         {/* Favicon Upload */}
-        <div className="space-y-3">
+        {/* <div className="space-y-3">
           <Label>Favicon</Label>
           <input type="file" className="hidden" id="favicon" />
           <div className="border-2 border-dashed p-6 rounded-lg text-center">
@@ -160,7 +160,7 @@ export const BusinessTabForm = ({
               </Button>
             </label>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Description */}

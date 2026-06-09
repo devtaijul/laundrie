@@ -34,7 +34,7 @@ const menuItems = [
   { title: "Orders", url: "/admin/orders", icon: FileText },
   { title: "Customers", url: "/admin/customers", icon: Users },
   { title: "Drivers", url: "/admin/drivers", icon: Truck },
-  { title: "Website Management", url: "/admin/website", icon: FileText },
+  /*  { title: "Website Management", url: "/admin/website", icon: FileText }, */
   { title: "Reviews", url: "/admin/reviews", icon: Star },
   { title: "Gift Cards", url: "/admin/gift-cards", icon: Gift },
   { title: "Finance", url: "/admin/finance", icon: DollarSign },
