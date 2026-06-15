@@ -6,11 +6,5 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      {children}
-      <Footer />
-    </div>
-  );
+  return <div className="min-h-screen bg-background">{children}</div>;
 }
